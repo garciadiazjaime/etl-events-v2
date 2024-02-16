@@ -1,0 +1,15 @@
+const logger = require("./logger.js")("EXTRACT");
+
+async function extract(url) {
+  logger.info("scrapping", { url });
+
+  const response = await fetch(url);
+
+  const html = await response.text();
+
+  return html;
+}
+
+module.exports = {
+  extract,
+};
