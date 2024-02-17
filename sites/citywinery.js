@@ -1,100 +1,96 @@
 const async = require("async");
+const path = require("path");
 
-const { getMetadata } = require("../metadata.js");
-const { getGMapsLocation } = require("../gps.js");
-const { getSpotify } = require("../spotify.js");
-const { saveEvent } = require("../mint.js");
-const { getArtistSingle } = require("../artist.js");
-const logger = require("../support/logger.js")("COBRALOUNGE");
+const { getGMapsLocation } = require("../support/gps.js");
+const { saveEvent } = require("../support/mint.js");
+const { getArtistSingle } = require("../support/artist.js");
+const { extractJSON } = require("../support/extract.js");
 
-async function extract(url) {
-  logger.info("scrapping", { url });
+const logger = require("../support/logger")(path.basename(__filename));
 
-  const response = await fetch(url);
-
-  const data = await response.json();
-
-  return data;
-}
-
-function transform(data, preEvent, domain) {
-  const url = `${domain}/${preEvent.city.toLowerCase()}/events`;
+function transform(data, preEvent) {
+  const url = `${preEvent.url}/${preEvent.city.toLowerCase()}/events`;
   const events = data
     .filter((event) => event.category === "music")
     .map((event) => {
+      const artists = event.name.toLowerCase().includes("brunch")
+        ? []
+        : [{ name: event.name.split("-")[0]?.split("(")[0]?.trim() }];
+
       return {
         name: event.name,
         image: event.image,
         url: `${url}/${event.url}?${url}`,
         start_date: event.start,
         end_date: event.end,
-        buyUrl: `${domain}/${preEvent.city.toLowerCase()}/ticket-selection?eventId=${
-          event.url
-        }`,
+        buyUrl: `${
+          preEvent.url
+        }/${preEvent.city.toLowerCase()}/ticket-selection?eventId=${event.url}`,
         price: event.startingPrice,
         provider: preEvent.provider,
         venue: preEvent.venue,
         city: preEvent.city,
+        artists,
       };
     });
 
   return events;
 }
 
-async function getArtists(event) {
-  const artistName = event.name.split("-")[0]?.split("(")[0]?.trim();
+async function getDetails(event) {
+  const response = { artists: [] };
 
-  if (artistName.toLowerCase().includes("brunch")) {
-    return;
-  }
+  await async.eachSeries(event.artists, async (preArtist) => {
+    const artist = await getArtistSingle(preArtist.name);
 
-  const artist = await getArtistSingle(artistName);
+    if (artist) {
+      response.artists.push(artist);
+    }
+  });
 
-  if (!artist) {
-    return;
-  }
-
-  const spotify = await getSpotify(artist);
-  if (spotify) {
-    artist.spotify = spotify;
-  }
-
-  return [artist];
+  return response;
 }
 
-async function main() {
-  const url = "https://citywinery.com";
-  const preEvent = {
+async function etl() {
+  // todo: vivenu.com seems like a good reference for live music events
+  const venue = {
     venue: "City Winery",
     provider: "CITY_WINERY",
     city: "Chicago",
+    url: "https://citywinery.com",
   };
-  const location = await getGMapsLocation(preEvent);
+  const location = await getGMapsLocation(venue);
 
-  if (!location.website?.includes("citywinery.com")) {
-    logger.error("ERROR_WEBSITE", { url, maps: location.website });
+  if (!location) {
+    return;
   }
 
-  if (!location.metadata) {
-    const locationMetadata = await getMetadata(url);
-    location.metadata = locationMetadata;
-  }
-  // todo: vivenu.com seems like a good reference for live music events
-  const data = await extract(
+  const data = await extractJSON(
     "https://vivenu.com/api/events/public/listings?sellerId=64d2a7b3db682dbe2baf69d8&top=1000&visibleInListing=true&endMin=2024-02-11T04%3A00%3A00.000Z"
   );
 
-  const preEvents = transform(data, preEvent, url);
+  const preEvents = transform(data, venue);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const artists = await getArtists(preEvent);
+    const { artists } = await getDetails(preEvent);
 
     const event = { ...preEvent, artists, location };
     console.log(JSON.stringify(event, null, 2));
+
     await saveEvent(event);
   });
 }
 
-main().then(() => {
-  console.log("end");
-});
+async function main() {
+  logger.info("start");
+
+  await etl();
+
+  logger.info("end");
+}
+
+if (require.main === module) {
+  main().then(() => {});
+}
+
+module.exports = main;

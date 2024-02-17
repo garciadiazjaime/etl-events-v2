@@ -97,12 +97,22 @@ async function getGMapsLocation(event) {
   const location = await getLocationFromGMaps(event, slug_venue);
 
   if (!location) {
+    logger.error("NO_LOCATION", event);
     return;
   }
 
   if (!location.metadata) {
     const locationMetadata = await getMetadata(url);
     location.metadata = locationMetadata;
+  }
+
+  const website = new URL(event.url);
+  if (!location.website?.includes(website.host)) {
+    logger.error("ERROR_WEBSITE", {
+      provider: preEvent.provider,
+      url: preEvent.url,
+      maps: location.website,
+    });
   }
 
   return location;

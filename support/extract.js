@@ -10,6 +10,17 @@ async function extract(url) {
   return html;
 }
 
+async function extractJSON(url) {
+  logger.info("scrapping", { url });
+
+  const response = await fetch(url);
+
+  const data = await response.json();
+
+  return data;
+}
+
 module.exports = {
   extract,
+  extractJSON,
 };

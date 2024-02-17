@@ -11,7 +11,7 @@ function logger(reference) {
       // logtail.info(`${reference}:${msg}`, payload);
     },
     error: (msg, payload) => {
-      console.log(`${reference}`, msg, payload);
+      console.log(`ERROR:${reference}`, msg, payload);
       // logtail.error(reference, msg);
     },
     flush: () => {

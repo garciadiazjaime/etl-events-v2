@@ -55,54 +55,54 @@ function transform(html, preEvent) {
 }
 
 async function getDetails(event) {
-  const artists = [];
+  const response = { artists: [] };
+
   await async.eachSeries(event.artists, async (preArtist) => {
     const artist = await getArtistSingle(preArtist.name);
 
     if (artist) {
-      artists.push(artist);
+      response.artists.push(artist);
     }
   });
 
-  return { artists };
+  return response;
 }
 
-async function main() {
-  logger.info("start");
-  const url = "https://andysjazzclub.com/music-calendar/";
-  const preEvent = {
+async function etl() {
+  const venue = {
     venue: "Andy's Jazz Club & Restaurant",
     provider: "ANDYSJAZZCLUB",
     city: "Chicago",
+    url: "https://andysjazzclub.com/music-calendar/",
   };
-  const location = await getGMapsLocation(preEvent);
+  const location = await getGMapsLocation(venue);
 
   if (!location) {
-    logger.error("NO_LOCATION", preEvent);
     return;
   }
 
-  if (!location.website?.includes("andysjazzclub.com")) {
-    logger.error("ERROR_WEBSITE", { url, maps: location.website });
-  }
+  const html = await extract(venue.url);
 
-  const html = await extract(url);
-
-  const preEvents = transform(html, preEvent);
+  const preEvents = transform(html, venue);
 
   await async.eachSeries(preEvents, async (preEvent) => {
     const { artists } = await getDetails(preEvent);
 
     const event = { ...preEvent, artists, location };
     console.log(JSON.stringify(event, null, 2));
+
     await saveEvent(event);
   });
 }
 
-if (require.main === module) {
-  main().then(() => {
-    logger.info("end");
-  });
+async function main() {
+  logger.info("start");
+
+  await etl();
+
+  logger.info("end");
 }
 
-module.exports = main;
+if (require.main === module) {
+  main().then(() => {});
+}
