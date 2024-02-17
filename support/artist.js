@@ -5,12 +5,11 @@ const slugify = require("slugify");
 const { getDataFromWebsite, getImageFromURL } = require("./misc");
 const { getMusicbrainz } = require("./musicbrainz");
 const { getArtists } = require("./mint");
+const { getSpotify } = require("./spotify");
 
-const logger = require("./support/logger")("artist");
+const logger = require("./logger")("artist");
 
 async function getArtistSingle(value) {
-  const chalk = (await import("chalk").then((mod) => mod)).default;
-
   const name = value
     .trim()
     .replace(/ /g, "+")
@@ -30,7 +29,7 @@ async function getArtistSingle(value) {
   });
 
   if (artistFound) {
-    logger.info(chalk.green("found"), {
+    logger.info("found", {
       slug,
     });
 
@@ -76,6 +75,11 @@ async function getArtistSingle(value) {
 
   if (!artist.metadata.image) {
     logger.info(`no image`, { slug });
+  }
+
+  const spotify = await getSpotify(artist);
+  if (spotify) {
+    artist.spotify = spotify;
   }
 
   return artist;

@@ -1,8 +1,8 @@
 const async = require("async");
 const { Queue } = require("bullmq");
 
-const { getTransformer, getPaginator } = require("./providers/factories");
-const logger = require("./support/logger")("events");
+const { getTransformer, getPaginator } = require("../providers/factories");
+const logger = require("./logger")("events");
 
 require("dotenv").config();
 

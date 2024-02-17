@@ -1,6 +1,6 @@
 const cheerio = require("cheerio");
 
-const logger = require("./support/logger")("misc");
+const logger = require("./logger")("misc");
 
 const sleep = async (ms = 1_000) => {
   logger.info(`sleeping`, {
@@ -9,6 +9,8 @@ const sleep = async (ms = 1_000) => {
 
   await new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+const regexTime = /(1[0-2]|0?[1-9]):([0-5][0-9])\s?([AaPp][Mm])/;
 
 const snakeCase = (value) => value.trim().replace(/ /g, "_");
 
@@ -248,4 +250,5 @@ module.exports = {
   getURL,
   getSocialNetworkFrom,
   getInstagram,
+  regexTime,
 };

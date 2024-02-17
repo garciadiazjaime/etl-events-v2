@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const logger = require("./support/logger")("metadata");
+const logger = require("./logger")("metadata");
 
 const { getSocial, getImageFromURL } = require("./misc");
 

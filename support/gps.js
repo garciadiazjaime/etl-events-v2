@@ -1,9 +1,10 @@
 const { Client } = require("@googlemaps/google-maps-services-js");
 const slugify = require("slugify");
+require("dotenv").config();
 
 const { getLocations } = require("./mint");
 const { sleep } = require("./misc");
-const logger = require("./support/logger")("gps");
+const logger = require("./logger")("gps");
 
 async function getLocationFromDB(slug_venue) {
   const query = `slug_venue=${slug_venue}`;
@@ -77,27 +78,34 @@ async function getLocationFromGMaps(event, slug_venue) {
 }
 
 async function getGMapsLocation(event) {
-  const chalk = (await import("chalk").then((mod) => mod)).default;
-
   logger.info(`processing`, {
     venue: event.venue,
   });
 
   const slug_venue = slugify(event.venue, { lower: true, strict: true });
-  const location = await getLocationFromDB(slug_venue);
+  const locationFromDB = await getLocationFromDB(slug_venue);
 
-  if (location) {
-    logger.info(chalk.green("location found"), {
+  if (locationFromDB) {
+    logger.info("location found", {
       slug_venue,
-      website: location.website,
+      website: locationFromDB.website,
     });
 
-    return location;
+    return locationFromDB;
   }
 
-  const payload = await getLocationFromGMaps(event, slug_venue);
+  const location = await getLocationFromGMaps(event, slug_venue);
 
-  return payload;
+  if (!location) {
+    return;
+  }
+
+  if (!location.metadata) {
+    const locationMetadata = await getMetadata(url);
+    location.metadata = locationMetadata;
+  }
+
+  return location;
 }
 
 module.exports = {

@@ -1,19 +1,18 @@
 const cheerio = require("cheerio");
 const async = require("async");
 const moment = require("moment");
+const path = require("path");
 
-const { getMetadata } = require("../metadata");
-const { getGMapsLocation } = require("../gps");
-const { getSpotify } = require("../spotify");
-const { saveEvent } = require("../mint");
-const { getArtistSingle } = require("../artist");
+const { getGMapsLocation } = require("../support/gps");
+const { saveEvent } = require("../support/mint");
+const { getArtistSingle } = require("../support/artist");
 const { extract } = require("../support/extract");
+const { regexTime } = require("../support/misc");
 
-const logger = require("../support/logger")("ANDYSJAZZCLUB");
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(html, preEvent) {
   const $ = cheerio.load(html);
-  const regexTime = /(1[0-2]|0?[1-9]):([0-5][0-9])\s?([AaPp][Mm])/;
 
   const events = $('.mec-month-side [type="application/ld+json"]')
     .toArray()
@@ -42,7 +41,7 @@ function transform(html, preEvent) {
         url: data.url,
         start_date,
         description,
-        price: data.offers?.price || undefined,
+        price: data.offers?.price,
         provider: preEvent.provider,
         venue: preEvent.venue,
         city: preEvent.city,
@@ -55,27 +54,21 @@ function transform(html, preEvent) {
   return events;
 }
 
-async function getArtists(event) {
+async function getDetails(event) {
   const artists = [];
   await async.eachSeries(event.artists, async (preArtist) => {
     const artist = await getArtistSingle(preArtist.name);
 
-    if (!artist) {
-      return;
+    if (artist) {
+      artists.push(artist);
     }
-
-    const spotify = await getSpotify(artist);
-    if (spotify) {
-      artist.spotify = spotify;
-    }
-
-    artists.push(artist);
   });
 
-  return artists;
+  return { artists };
 }
 
 async function main() {
+  logger.info("start");
   const url = "https://andysjazzclub.com/music-calendar/";
   const preEvent = {
     venue: "Andy's Jazz Club & Restaurant",
@@ -84,13 +77,13 @@ async function main() {
   };
   const location = await getGMapsLocation(preEvent);
 
-  if (!location.website?.includes("andysjazzclub.com")) {
-    logger.error("ERROR_WEBSITE", { url, maps: location.website });
+  if (!location) {
+    logger.error("NO_LOCATION", preEvent);
+    return;
   }
 
-  if (!location.metadata) {
-    const locationMetadata = await getMetadata(url);
-    location.metadata = locationMetadata;
+  if (!location.website?.includes("andysjazzclub.com")) {
+    logger.error("ERROR_WEBSITE", { url, maps: location.website });
   }
 
   const html = await extract(url);
@@ -98,7 +91,7 @@ async function main() {
   const preEvents = transform(html, preEvent);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const artists = await getArtists(preEvent);
+    const { artists } = await getDetails(preEvent);
 
     const event = { ...preEvent, artists, location };
     console.log(JSON.stringify(event, null, 2));
@@ -108,7 +101,7 @@ async function main() {
 
 if (require.main === module) {
   main().then(() => {
-    console.log("end");
+    logger.info("end");
   });
 }
 

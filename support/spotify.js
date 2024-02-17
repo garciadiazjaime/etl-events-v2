@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const logger = require("./support/logger")("spotify");
+const logger = require("./logger")("spotify");
 
 const getToken = async () => {
   const url = "https://accounts.spotify.com/api/token";

@@ -7,8 +7,8 @@ const { getMetadata } = require("./metadata");
 const { getArtist } = require("./artist");
 const { getSpotify } = require("./spotify");
 const { saveEvent } = require("./mint");
-const etl = require("./sites/andysjazzclub");
-const logger = require("./support/logger")("queue");
+const etl = require("../sites/andysjazzclub");
+const logger = require("./logger")("queue");
 
 require("dotenv").config();
 

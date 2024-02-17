@@ -2,7 +2,7 @@ const cheerio = require("cheerio");
 const { compareTwoStrings } = require("string-similarity");
 
 const { validURL, getGenres } = require("./misc");
-const logger = require("./support/logger")("musicbrainz");
+const logger = require("./logger")("musicbrainz");
 
 function isMatch(artistName, artistResult) {
   if (!artistName || !artistResult) {
