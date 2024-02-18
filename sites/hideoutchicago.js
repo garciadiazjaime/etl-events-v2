@@ -1,22 +1,19 @@
 const cheerio = require("cheerio");
 const async = require("async");
 const moment = require("moment");
+const path = require("path");
 
-const { getMetadata } = require("../metadata.js");
-const { getGMapsLocation } = require("../gps.js");
-const { getSpotify } = require("../spotify.js");
-const { saveEvent } = require("../mint.js");
-const logger = require("../support/logger.js")("HIDEOUTCHICAGO");
+const { getMetadata } = require("../support/metadata.js");
+const { getGMapsLocation } = require("../support/gps.js");
+const { getSpotify } = require("../support/spotify.js");
+const { saveEvent } = require("../support/mint.js");
+const { extract } = require("../support/extract.js");
+const { getArtistSingle } = require("../support/artist.js");
+const { regexTime } = require("../support/misc.js");
 
-async function extract(url) {
-  logger.info("scrapping", { url });
-  const response = await fetch(url);
-  const html = await response.text();
+const logger = require("../support/logger")(path.basename(__filename));
 
-  return html;
-}
-
-function transformDetails(html) {
+function transformEventDetails(html) {
   const $ = cheerio.load(html);
   const price = $(".eventCost").text().trim().match(/\d+/)?.[0];
   const buyUrl = $(".on-sale a").attr("href");
@@ -38,35 +35,70 @@ function transformDetails(html) {
   return details;
 }
 
-async function getDetails(url) {
+async function getEventDetails(url) {
   if (!url) {
     return;
   }
 
   const html = await extract(url);
 
-  const details = transformDetails(html);
+  const eventDetails = transformEventDetails(html);
+  const artists = [];
 
-  await async.eachSeries(details.artists, async (artist) => {
-    const metadata = await getMetadata(artist.metadata.website);
-    console.log(metadata);
-    artist.metadata = {
-      website: artist.metadata.website,
-      ...metadata,
+  await async.eachSeries(eventDetails.artists, async (preArtist) => {
+    const artist = await getArtistSingle(preArtist.name);
+
+    if (!preArtist.metadata.website && artist) {
+      artists.push(artist);
+      return;
+    }
+
+    const metadata = await getMetadata(preArtist.metadata.website);
+    const spotify = await getSpotify(preArtist);
+
+    const newArtist = {
+      name: preArtist.name,
+      metadata,
+      spotify,
     };
 
-    const spotify = await getSpotify(artist);
-    if (spotify) {
-      artist.spotify = spotify;
+    if (!artist) {
+      artists.push(newArtist);
+      return;
     }
+
+    const artistMerged = {
+      ...artist,
+      metadata: {
+        website: artist.metadata?.website || newArtist.metadata?.website,
+        image: artist.metadata?.image || newArtist.metadata?.image,
+        twitter: artist.metadata?.twitter || newArtist.metadata?.twitter,
+        facebook: artist.metadata?.facebook || newArtist.metadata?.facebook,
+        youtube: artist.metadata?.youtube || newArtist.metadata?.youtube,
+        instagram: artist.metadata?.instagram || newArtist.metadata?.instagram,
+        tiktok: artist.metadata?.tiktok || newArtist.metadata?.tiktok,
+        soundcloud:
+          artist.metadata?.soundcloud || newArtist.metadata?.soundcloud,
+        spotify: artist.metadata?.spotify || newArtist.metadata?.spotify,
+        appleMusic:
+          artist.metadata?.appleMusic || newArtist.metadata?.appleMusic,
+        band_camp: artist.metadata?.band_camp || newArtist.metadata?.band_camp,
+      },
+      spotify,
+    };
+
+    artists.push(artistMerged);
   });
 
-  return details;
+  return {
+    price: eventDetails.price,
+    buyUrl: eventDetails.buyUrl,
+    artists,
+  };
 }
 
-function transform(html, preEvent) {
+function transform(html) {
   const $ = cheerio.load(html);
-  const regexTime = /(1[0-2]|0?[1-9]):([0-5][0-9])([AaPp][Mm])/;
 
   const events = $(".rhpSingleEvent")
     .toArray()
@@ -89,9 +121,6 @@ function transform(html, preEvent) {
         url,
         start_date,
         description,
-        provider: preEvent.provider,
-        venue: preEvent.venue,
-        city: preEvent.city,
       };
 
       return event;
@@ -101,35 +130,47 @@ function transform(html, preEvent) {
 }
 
 async function main() {
-  const preEvent = {
+  const venue = {
     venue: "Hideout Chicago",
     provider: "HIDEOUTCHICAGO",
     city: "Chicago",
+    url: "https://hideoutchicago.com/",
   };
-  const location = await getGMapsLocation(preEvent);
-  const url = "https://hideoutchicago.com/";
+  const location = await getGMapsLocation(venue);
 
-  if (!location.website?.includes("hideoutchicago.com")) {
-    logger.error("ERROR_WEBSITE", { url, maps: location.website });
+  if (!location) {
+    return location;
   }
 
-  if (!location.metadata) {
-    const locationMetadata = await getMetadata(url);
-    location.metadata = locationMetadata;
-  }
+  const html = await extract(venue.url);
 
-  const html = await extract(url);
-
-  const preEvents = transform(html, preEvent);
+  const preEvents = transform(html);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const details = await getDetails(preEvent.url);
-    const event = { ...preEvent, ...details, location };
-    console.log(JSON.stringify(event, null, 2));
-    await saveEvent(event);
+    const { name, image, url, start_date, description } = preEvent;
+    const { price, buyUrl, artists } = await getEventDetails(preEvent.url);
+
+    await saveEvent({
+      name,
+      image,
+      url,
+      start_date,
+      description,
+      price,
+      buyUrl,
+      artists,
+      location,
+      provider: venue.provider,
+      venue: venue.venue,
+      city: venue.city,
+    });
   });
+
+  logger.info("processed", { total: preEvents.length });
 }
 
-main().then(() => {
-  console.log("end");
-});
+if (require.main === module) {
+  main().then(() => {});
+}
+
+module.exports = main;

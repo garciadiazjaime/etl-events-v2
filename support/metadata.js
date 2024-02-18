@@ -1,13 +1,19 @@
+const path = require("path");
+
 require("dotenv").config();
 
-const logger = require("./logger")("metadata");
+const logger = require("./logger")(path.basename(__filename));
 
 const { getSocial, getImageFromURL } = require("./misc");
 
 async function getMetadata(url) {
   logger.info(`scrapping`, { url });
 
-  if (!url || url.includes("youtube.com")) {
+  if (
+    !url ||
+    ["youtube.com", "instagram.com"].find((item) => url.includes(item))
+  ) {
+    logger.info(`skipping`, { url });
     return {};
   }
 
