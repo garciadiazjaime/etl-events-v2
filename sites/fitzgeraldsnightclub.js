@@ -1,21 +1,14 @@
 const cheerio = require("cheerio");
 const async = require("async");
 const moment = require("moment");
+const path = require("path");
 
-const { getMetadata } = require("../metadata.js");
-const { getGMapsLocation } = require("../gps.js");
-const { getSpotify } = require("../spotify.js");
-const { saveEvent } = require("../mint.js");
-const { getArtistSingle } = require("../artist.js");
-const logger = require("../support/logger.js")("FITZGERALDS");
+const { getGMapsLocation } = require("../support/gps.js");
+const { saveEvent } = require("../support/mint.js");
+const { extract } = require("../support/extract.js");
+const { getArtistsDetails } = require("../support/preEvents.js");
 
-async function extract(url) {
-  logger.info("scrapping", { url });
-  const response = await fetch(url);
-  const html = await response.text();
-
-  return html;
-}
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(html, preEvent) {
   const $ = cheerio.load(html);
@@ -82,11 +75,9 @@ function transformDetails(html) {
       return artist;
     });
 
-  const details = {
+  return {
     artists,
   };
-
-  return details;
 }
 
 async function getDetails(url) {
@@ -96,65 +87,43 @@ async function getDetails(url) {
 
   const html = await extract(url);
 
-  const details = transformDetails(html);
-  const response = {
-    artists: [],
-  };
-
-  await async.eachSeries(details.artists, async (preArtist) => {
-    const artistSingle = await getArtistSingle(preArtist.name);
-
-    if (!artistSingle) {
-      return;
-    }
-
-    const artist = {
-      ...artistSingle,
-    };
-
-    const spotify = await getSpotify(artist);
-    if (spotify) {
-      artist.spotify = spotify;
-    }
-
-    response.artists.push(artist);
-  });
+  const preEvent = transformDetails(html);
+  const response = await getArtistsDetails(preEvent);
 
   return response;
 }
 
 async function main() {
   // todo: Pagination
-  const url = "https://www.fitzgeraldsnightclub.com/shows/list/";
-  const preEvent = {
+  const venue = {
     venue: "FitzGerald's",
     provider: "FITZGERALDS",
     city: "Chicago",
+    url: "https://www.fitzgeraldsnightclub.com/shows/list/",
   };
-  const location = await getGMapsLocation(preEvent);
+  const location = await getGMapsLocation(venue);
 
-  if (!location.website?.includes("fitzgeraldsnightclub.com")) {
-    logger.error("ERROR_WEBSITE", { url, maps: location.website });
+  if (!location) {
+    return;
   }
 
-  if (!location.metadata) {
-    const locationMetadata = await getMetadata(url);
-    location.metadata = locationMetadata;
-  }
+  const html = await extract(venue.url);
 
-  const html = await extract(url);
-
-  const preEvents = transform(html, preEvent);
+  const preEvents = transform(html, venue);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const details = await getDetails(preEvent.url);
+    const { artists } = await getDetails(preEvent.url);
 
-    const event = { ...preEvent, ...details, location };
-    console.log(JSON.stringify(event, null, 2));
+    const event = { ...preEvent, artists, location };
+
     await saveEvent(event);
   });
+
+  logger.info("processed", { total: preEvents.length });
 }
 
-main().then(() => {
-  console.log("end");
-});
+if (require.main === module) {
+  main().then(() => {});
+}
+
+module.exports = main;

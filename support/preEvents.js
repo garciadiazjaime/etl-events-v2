@@ -7,7 +7,7 @@ const { getArtistSingle } = require("../support/artist.js");
 
 const logger = require("../support/logger")(path.basename(__filename));
 
-async function getDetails(event) {
+async function getArtistsDetails(event) {
   const response = { artists: [] };
 
   await async.eachSeries(event.artists, async (preArtist) => {
@@ -29,7 +29,7 @@ async function processEventsWithArtist(venue, preEvents) {
   }
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const { artists } = await getDetails(preEvent);
+    const { artists } = await getArtistsDetails(preEvent);
 
     const event = { ...preEvent, artists, location };
 
@@ -41,4 +41,5 @@ async function processEventsWithArtist(venue, preEvents) {
 
 module.exports = {
   processEventsWithArtist,
+  getArtistsDetails,
 };
