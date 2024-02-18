@@ -1,24 +1,12 @@
 const async = require("async");
+const path = require("path");
 
-const { getMetadata } = require("../metadata.js");
-const { getGMapsLocation } = require("../gps.js");
-const { getSpotify } = require("../spotify.js");
-const { saveEvent } = require("../mint.js");
-const { getArtistSingle } = require("../artist.js");
-const logger = require("../support/logger.js")("THALIA_HALL");
+const { getGMapsLocation } = require("../support/gps.js");
+const { saveEvent } = require("../support/mint.js");
+const { getArtistSingle } = require("../support/artist.js");
+const { extractJSON } = require("../support/extract.js");
 
-async function extract(url) {
-  logger.info("scrapping", { url });
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  const data = await response.json();
-
-  return data;
-}
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(data, location) {
   const events = data._embedded?.events.map((event) => {
@@ -87,14 +75,15 @@ function transform(data, location) {
   return events;
 }
 
-async function getArtists(event) {
-  const artists = [];
+async function getDetails(event) {
+  const response = { artists: [] };
 
   await async.eachSeries(event.artists, async (preArtist) => {
     const artist = await getArtistSingle(preArtist.name);
 
     if (!artist) {
-      return preArtist;
+      response.artists.push(preArtist);
+      return;
     }
 
     if (!artist.genres?.length) {
@@ -125,54 +114,49 @@ async function getArtists(event) {
       }
     });
 
-    const spotify = await getSpotify(artist);
-    if (spotify) {
-      artist.spotify = spotify;
-    }
-
-    artists.push(artist);
+    response.artists.push(artist);
   });
 
-  return artists;
+  return response;
 }
 
 async function main() {
-  const preLocation = {
+  const venue = {
     venue: "Evanston SPACE",
     provider: "EVANSTON_SPACE",
     city: "Chicago",
     website: "https://www.evanstonspace.com/",
   };
-  const location = await getGMapsLocation(preLocation);
+  const location = await getGMapsLocation(venue);
 
-  if (!location.website?.includes("evanstonspace.com")) {
-    logger.error("ERROR_WEBSITE", {
-      website: preLocation.website,
-      maps: location.website,
-    });
-  }
-
-  if (!location.metadata) {
-    const locationMetadata = await getMetadata(preLocation.website);
-    location.metadata = locationMetadata;
+  if (!location) {
+    return;
   }
 
   // todo: this api-key might expire
   // todo: this is the same as thaliahallchicago
-  const html = await extract(
-    "https://app.ticketmaster.com/discovery/v2/events.json?size=50&apikey=8GdH3nQcFnnZkzWGuPSGkh9oIKUGjffQ&venueId=KovZpakJQe&venueId=rZ7HnEZ173FQ4&venueId=rZ7HnEZ17fSA4&source=ticketmaster,ticketweb"
+  const html = await extractJSON(
+    "https://app.ticketmaster.com/discovery/v2/events.json?size=50&apikey=8GdH3nQcFnnZkzWGuPSGkh9oIKUGjffQ&venueId=KovZpakJQe&venueId=rZ7HnEZ173FQ4&venueId=rZ7HnEZ17fSA4&source=ticketmaster,ticketweb",
+    {
+      "Content-Type": "application/json",
+    }
   );
 
-  const preEvents = transform(html, preLocation);
+  const preEvents = transform(html, venue);
+
   await async.eachSeries(preEvents, async (preEvent) => {
-    const artists = await getArtists(preEvent);
+    const { artists } = await getDetails(preEvent);
 
     const event = { ...preEvent, artists, location };
-    console.log(JSON.stringify(event, null, 2));
+
     await saveEvent(event);
   });
+
+  logger.info("processed", { total: preEvents.length });
 }
 
-main().then(() => {
-  console.log("end");
-});
+if (require.main === module) {
+  main().then(() => {});
+}
+
+module.exports = main;
