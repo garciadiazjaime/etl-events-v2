@@ -1,15 +1,9 @@
 const cheerio = require("cheerio");
-const async = require("async");
 const moment = require("moment");
-const path = require("path");
 
-const { getGMapsLocation } = require("../support/gps");
-const { saveEvent } = require("../support/mint");
-const { getArtistSingle } = require("../support/artist");
 const { extract } = require("../support/extract");
 const { regexTime } = require("../support/misc");
-
-const logger = require("../support/logger")(path.basename(__filename));
+const { processEventsWithArtist } = require("../support/preEvents.js");
 
 function transform(html, preEvent) {
   const $ = cheerio.load(html);
@@ -54,55 +48,23 @@ function transform(html, preEvent) {
   return events;
 }
 
-async function getDetails(event) {
-  const response = { artists: [] };
-
-  await async.eachSeries(event.artists, async (preArtist) => {
-    const artist = await getArtistSingle(preArtist.name);
-
-    if (artist) {
-      response.artists.push(artist);
-    }
-  });
-
-  return response;
-}
-
-async function etl() {
+async function main() {
   const venue = {
     venue: "Andy's Jazz Club & Restaurant",
     provider: "ANDYSJAZZCLUB",
     city: "Chicago",
     url: "https://andysjazzclub.com/music-calendar/",
   };
-  const location = await getGMapsLocation(venue);
-
-  if (!location) {
-    return;
-  }
 
   const html = await extract(venue.url);
 
   const preEvents = transform(html, venue);
 
-  await async.eachSeries(preEvents, async (preEvent) => {
-    const { artists } = await getDetails(preEvent);
-
-    const event = { ...preEvent, artists, location };
-    console.log(JSON.stringify(event, null, 2));
-
-    await saveEvent(event);
-  });
-}
-
-async function main() {
-  logger.info("start");
-
-  await etl();
-
-  logger.info("end");
+  await processEventsWithArtist(venue, preEvents);
 }
 
 if (require.main === module) {
   main().then(() => {});
 }
+
+module.exports = main;
