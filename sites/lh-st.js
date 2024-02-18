@@ -1,24 +1,17 @@
 const cheerio = require("cheerio");
 const async = require("async");
 const moment = require("moment");
+const path = require("path");
 
-const { getMetadata } = require("../metadata.js");
-const { getGMapsLocation } = require("../gps.js");
-const { getSpotify } = require("../spotify.js");
-const { saveEvent } = require("../mint.js");
-const { getSocialNetworkFrom, getInstagram } = require("../misc.js");
-const { getArtistSingle } = require("../artist.js");
-const logger = require("../support/logger.js")("SCHUBAS_TAVERN");
+const { getGMapsLocation } = require("../support/gps.js");
+const { saveEvent } = require("../support/mint.js");
+const { getSocialNetworkFrom, getInstagram } = require("../support/misc.js");
+const { getArtistSingle } = require("../support/artist.js");
+const { extract } = require("../support/extract.js");
 
-async function extract(url) {
-  logger.info("scrapping", { url });
-  const response = await fetch(url);
-  const html = await response.text();
+const logger = require("../support/logger")(path.basename(__filename));
 
-  return html;
-}
-
-function transform(html, preEvent) {
+function transform(html) {
   const $ = cheerio.load(html);
   const regexTime = /(1[0-2]|0?[1-9]):([0-5][0-9])\s?([AaPp][Mm])/;
 
@@ -51,11 +44,6 @@ function transform(html, preEvent) {
         .trim()
         .replace(/(\r\n|\n|\r)+/gm, "")
         .replace(/(\s)+/g, " ");
-      const buyUrl = url;
-
-      const provider = preEvent.provider;
-      const venue = preEvent.venue;
-      const city = preEvent.city;
 
       const event = {
         name,
@@ -63,10 +51,6 @@ function transform(html, preEvent) {
         url,
         start_date,
         description,
-        provider,
-        venue,
-        city,
-        buyUrl,
       };
 
       return event;
@@ -141,10 +125,14 @@ async function getDetails(url) {
     const artistSingle = await getArtistSingle(preArtist.name);
 
     if (!artistSingle) {
+      if (preArtist.name && Object.keys(preArtist.metadata).length) {
+        response.artists.push(preArtist);
+      }
+
       return;
     }
 
-    const artist = {
+    const artistMerged = {
       name: preArtist.name || artistSingle.name,
       profile: artistSingle.profile,
       genres: artistSingle.genres,
@@ -166,14 +154,10 @@ async function getDetails(url) {
         band_camp:
           artistSingle.metadata?.band_camp || preArtist.metadata.bandcamp,
       },
+      spotify: artistSingle.spotify,
     };
 
-    const spotify = await getSpotify(artist);
-    if (spotify) {
-      artist.spotify = spotify;
-    }
-
-    response.artists.push(artist);
+    response.artists.push(artistMerged);
   });
 
   return response;
@@ -182,31 +166,38 @@ async function getDetails(url) {
 async function main() {
   // todo: headless browser might be able to pull price
   const url = "https://lh-st.com/";
-  const preEvent = {
+  const venue = {
     venue: "Schubas Tavern",
     provider: "SCHUBAS_TAVERN",
     city: "Chicago",
   };
-  const location = await getGMapsLocation(preEvent);
+  const location = await getGMapsLocation(venue);
 
-  if (!location.website?.includes("lh-st.com")) {
-    logger.error("ERROR_WEBSITE", { url, maps: location.website });
-  }
-
-  if (!location.metadata) {
-    const locationMetadata = await getMetadata(url);
-    location.metadata = locationMetadata;
+  if (!location) {
+    return;
   }
 
   const html = await extract(url);
 
-  const preEvents = transform(html, preEvent);
+  const preEvents = transform(html);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const details = await getDetails(preEvent.url);
+    const { name, image, url, start_date, description } = preEvent;
+    const { artists } = await getDetails(preEvent.url);
 
-    const event = { ...preEvent, ...details, location };
-    console.log(JSON.stringify(event, null, 2));
+    const event = {
+      name,
+      image,
+      url,
+      start_date,
+      description,
+      artists,
+      location,
+      provider: venue.provider,
+      venue: venue.venue,
+      city: venue.city,
+    };
+
     await saveEvent(event);
   });
 }
