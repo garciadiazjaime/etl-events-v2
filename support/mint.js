@@ -182,6 +182,8 @@ async function saveEvent(payload) {
 
   const data = await response.json();
   if (response.status > 201) {
+    console.log(JSON.stringify(payload, null, 2));
+
     logger.error(`Error saving processed event`, {
       data: JSON.stringify(data),
     });

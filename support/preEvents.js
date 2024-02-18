@@ -32,7 +32,6 @@ async function processEventsWithArtist(venue, preEvents) {
     const { artists } = await getDetails(preEvent);
 
     const event = { ...preEvent, artists, location };
-    // console.log(JSON.stringify(event, null, 2));
 
     await saveEvent(event);
   });
