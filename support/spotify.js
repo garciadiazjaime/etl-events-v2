@@ -1,35 +1,35 @@
-require("dotenv").config();
+require('dotenv').config();
 
-const logger = require("./logger")("spotify");
+const logger = require('./logger')('spotify');
 
 const getToken = async () => {
-  const url = "https://accounts.spotify.com/api/token";
+  const url = 'https://accounts.spotify.com/api/token';
 
   const details = {
-    grant_type: "client_credentials",
+    grant_type: 'client_credentials',
     client_id: process.env.SPOTIFY_CLIENT,
     client_secret: process.env.SPOTIFY_SECRET,
   };
 
   let formBody = [];
-  for (let property in details) {
+  for (const property in details) {
     const encodedKey = encodeURIComponent(property);
     const encodedValue = encodeURIComponent(details[property]);
-    formBody.push(encodedKey + "=" + encodedValue);
+    formBody.push(`${encodedKey}=${encodedValue}`);
   }
-  formBody = formBody.join("&");
+  formBody = formBody.join('&');
 
   const response = await fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: formBody,
   });
 
   const data = await response.json();
   if (response.status > 200) {
-    logger.info("token response", data);
+    logger.info('token response', data);
     return;
   }
 
@@ -46,7 +46,7 @@ const getArtistDetails = async (token, id) => {
 
   const data = await response.json();
   if (response.status > 200) {
-    logger.info(`error artist detail:`, {
+    logger.info('error artist detail:', {
       token,
       id,
       data,
@@ -59,30 +59,30 @@ const getArtistDetails = async (token, id) => {
 
 async function getSpotify(artist) {
   if (!artist.metadata?.spotify) {
-    logger.info(`NO_SPOTIFY`, {
+    logger.info('NO_SPOTIFY', {
       name: artist.name,
     });
     return;
   }
 
-  if (artist.metadata.spotify.includes("user/")) {
-    logger.info(`USER_NO_ARTISTS`, {
+  if (artist.metadata.spotify.includes('user/')) {
+    logger.info('USER_NO_ARTISTS', {
       name: artist.name,
     });
     return;
   }
 
-  logger.info(`artist`, {
+  logger.info('artist', {
     name: artist.name,
     spotify: artist.metadata.spotify,
   });
 
   const token = await getToken();
-  const id = artist.metadata.spotify.split("/").pop();
+  const id = artist.metadata.spotify.split('/').pop();
   const details = await getArtistDetails(token, id);
 
   if (!details) {
-    logger.info(`INVALID_ARTIST`, { id });
+    logger.info('INVALID_ARTIST', { id });
     return;
   }
 

@@ -1,5 +1,5 @@
-const cheerio = require("cheerio");
-const moment = require("moment");
+const cheerio = require('cheerio');
+const moment = require('moment');
 
 function getOriginFromUrl(url) {
   const providerUrl = new URL(url);
@@ -8,16 +8,16 @@ function getOriginFromUrl(url) {
 
 function SongkickPages(html, originalLink) {
   const $ = cheerio.load(html);
-  const paginatorLinks = $(".pagination a")
+  const paginatorLinks = $('.pagination a')
     .toArray()
-    .filter((pageLink) => pageLink.attribs["aria-label"]?.includes("Page"))
+    .filter((pageLink) => pageLink.attribs['aria-label']?.includes('Page'))
     .map((pageLink) => {
       const url = `${getOriginFromUrl(originalLink.url)}${
         pageLink.attribs.href
       }`;
 
       return {
-        url: url,
+        url,
         city: originalLink.city,
         provider: originalLink.provider,
       };
@@ -29,18 +29,18 @@ function SongkickPages(html, originalLink) {
 function SongkickTransformer(html, link) {
   const $ = cheerio.load(html);
 
-  const events = $(".event-listings-element")
+  const events = $('.event-listings-element')
     .toArray()
     .map((item) => {
-      const name = $(item).find(".artists strong").text();
+      const name = $(item).find('.artists strong').text();
       const image = `https:${$(item)
-        .find(".artist-profile-image")
-        .data("src")}`;
+        .find('.artist-profile-image')
+        .data('src')}`;
       const url = `${getOriginFromUrl(link.url)}${$(item)
-        .find(".event-link")
-        .attr("href")}`;
-      const venue = $(item).find(".venue-link").text();
-      const timestamp = $(item).find("time").attr("datetime");
+        .find('.event-link')
+        .attr('href')}`;
+      const venue = $(item).find('.venue-link').text();
+      const timestamp = $(item).find('time').attr('datetime');
       const start_date = moment(timestamp).format();
 
       return {

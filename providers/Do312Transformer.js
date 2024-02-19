@@ -1,5 +1,5 @@
-const cheerio = require("cheerio");
-const moment = require("moment");
+const cheerio = require('cheerio');
+const moment = require('moment');
 
 function getOriginFromUrl(url) {
   const providerUrl = new URL(url);
@@ -9,8 +9,8 @@ function getOriginFromUrl(url) {
 function Do312Pages(html, originalLink) {
   const $ = cheerio.load(html);
   const nextPageLink = `${getOriginFromUrl(originalLink.url)}${$(
-    ".ds-next-page"
-  ).attr("href")}`;
+    '.ds-next-page',
+  ).attr('href')}`;
 
   return [
     {
@@ -24,18 +24,18 @@ function Do312Pages(html, originalLink) {
 function Do312Transformer(html, link) {
   const $ = cheerio.load(html);
 
-  const events = $(".event-card")
+  const events = $('.event-card')
     .toArray()
     .map((item) => {
-      const name = $(item).find(".ds-listing-event-title").text().trim();
-      const image = $(item).find(".ds-cover-image").attr("style").split("'")[1];
+      const name = $(item).find('.ds-listing-event-title').text().trim();
+      const image = $(item).find('.ds-cover-image').attr('style').split("'")[1];
       const url = `${getOriginFromUrl(link.url)}${$(item)
-        .find(".ds-listing-event-title.url")
-        .attr("href")}`;
-      const venue = $(item).find(".ds-venue-name").text().trim();
+        .find('.ds-listing-event-title.url')
+        .attr('href')}`;
+      const venue = $(item).find('.ds-venue-name').text().trim();
       const timestamp = $(item)
-        .find(".ds-listing-details > meta")
-        .attr("datetime");
+        .find('.ds-listing-details > meta')
+        .attr('datetime');
       const start_date = moment(timestamp).format();
 
       return {

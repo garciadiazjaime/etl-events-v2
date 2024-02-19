@@ -1,8 +1,8 @@
-require("dotenv").config();
+require('dotenv').config();
 
 const EVENTS_API = `${process.env.NEXT_PUBLIC_EVENTS_API}/events`;
 
-const logger = require("./logger")("mint");
+const logger = require('./logger')('mint');
 
 async function getEvents(query) {
   const response = await fetch(`${EVENTS_API}/?${query}`);
@@ -14,16 +14,16 @@ async function getEvents(query) {
 
 async function updateEvent(eventPk, payload) {
   const response = await fetch(`${EVENTS_API}/${eventPk}/`, {
-    method: "PUT",
+    method: 'PUT',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   });
 
   const data = await response.json();
   if (response.status > 201) {
-    logger.error(`error updating event:`, {
+    logger.error('error updating event:', {
       eventPk,
       payload,
       data,
@@ -31,30 +31,30 @@ async function updateEvent(eventPk, payload) {
     return;
   }
 
-  logger.info(`event updated`, { pk: data.pk });
+  logger.info('event updated', { pk: data.pk });
 
   return response;
 }
 
 async function saveLocation(payload) {
   const response = await fetch(`${EVENTS_API}/locations/`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   });
 
   const data = await response.json();
   if (response.status > 201) {
-    logger.error(`error saving location:`, {
+    logger.error('error saving location:', {
       payload,
       data,
     });
     return;
   }
 
-  logger.info(`location saved`, { slug: data.slug });
+  logger.info('location saved', { slug: data.slug });
 
   return response;
 }
@@ -69,16 +69,16 @@ async function getLocations(query) {
 
 async function updateLocation(pk, payload) {
   const response = await fetch(`${EVENTS_API}/locations/${pk}/`, {
-    method: "PUT",
+    method: 'PUT',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   });
 
   const data = await response.json();
   if (response.status > 201) {
-    logger.error(`error updating location:`, {
+    logger.error('error updating location:', {
       pk,
       payload,
       data,
@@ -86,30 +86,30 @@ async function updateLocation(pk, payload) {
     return;
   }
 
-  logger.info(`location updated`, { pk: data.pk });
+  logger.info('location updated', { pk: data.pk });
 
   return response;
 }
 
 async function saveMetadata(payload) {
   const response = await fetch(`${EVENTS_API}/metadata/`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   });
 
   const data = await response.json();
   if (response.status > 201) {
-    logger.error(`Error saving metadata`, {
+    logger.error('Error saving metadata', {
       payload,
       data,
     });
     return;
   }
 
-  logger.info(`metadata saved`, {
+  logger.info('metadata saved', {
     slug: data.slug,
   });
 
@@ -126,23 +126,23 @@ async function getArtists(query) {
 
 async function rankEvents(payload) {
   const response = await fetch(`${EVENTS_API}/rank/`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   });
 
   const data = await response.json();
 
-  logger.info("events ranked", data);
+  logger.info('events ranked', data);
 }
 
 async function updateSpotify(payload, pk) {
   const response = await fetch(`${EVENTS_API}/spotify/${pk}/`, {
-    method: "PUT",
+    method: 'PUT',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   });
@@ -150,7 +150,7 @@ async function updateSpotify(payload, pk) {
   const data = await response.json();
 
   if (response.status > 201) {
-    logger.error(`error updating spotify:`, {
+    logger.error('error updating spotify:', {
       pk,
       payload,
       data,
@@ -158,7 +158,7 @@ async function updateSpotify(payload, pk) {
     return;
   }
 
-  logger.info(`spotify updated`, { pk: data.pk });
+  logger.info('spotify updated', { pk: data.pk });
 
   return data;
 }
@@ -173,9 +173,9 @@ async function getArtistMetadata(query) {
 
 async function saveEvent(payload) {
   const response = await fetch(`${EVENTS_API}/`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
   });
@@ -184,14 +184,14 @@ async function saveEvent(payload) {
   if (response.status > 201) {
     console.log(JSON.stringify(payload, null, 2));
 
-    logger.error(`Error saving processed event`, {
+    logger.error('Error saving processed event', {
       data: JSON.stringify(data),
     });
 
     return;
   }
 
-  logger.info(`processed event saved`, {
+  logger.info('processed event saved', {
     slug: data.name,
   });
 

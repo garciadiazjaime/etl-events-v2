@@ -1,11 +1,11 @@
-const async = require("async");
-const path = require("path");
+const async = require('async');
+const path = require('path');
 
-const { getGMapsLocation } = require("../support/gps.js");
-const { saveEvent } = require("../support/mint.js");
-const { getArtistSingle } = require("../support/artist.js");
+const { getGMapsLocation } = require('./gps.js');
+const { saveEvent } = require('./mint.js');
+const { getArtistSingle } = require('./artist.js');
 
-const logger = require("../support/logger")(path.basename(__filename));
+const logger = require('./logger')(path.basename(__filename));
 
 async function getArtistsDetails(event) {
   const response = { artists: [] };
@@ -45,7 +45,7 @@ async function processEventsWithArtist(venue, preEvents) {
     await saveEvent(event);
   });
 
-  logger.info("processed", { total: preEvents.length });
+  logger.info('processed', { total: preEvents.length });
 }
 
 module.exports = {

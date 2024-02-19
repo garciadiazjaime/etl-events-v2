@@ -1,16 +1,16 @@
-const { Client } = require("@googlemaps/google-maps-services-js");
-const slugify = require("slugify");
-require("dotenv").config();
+const { Client } = require('@googlemaps/google-maps-services-js');
+const slugify = require('slugify');
+require('dotenv').config();
 
-const { getLocations } = require("./mint");
-const { sleep } = require("./misc");
-const logger = require("./logger")("gps");
+const { getLocations } = require('./mint');
+const { sleep } = require('./misc');
+const logger = require('./logger')('gps');
 
 async function getLocationFromDB(slug_venue) {
   const query = `slug_venue=${slug_venue}`;
   const [location] = await getLocations(query);
 
-  logger.info(`internal location search`, {
+  logger.info('internal location search', {
     slug_venue,
     location: !!location,
   });
@@ -19,14 +19,14 @@ async function getLocationFromDB(slug_venue) {
 }
 
 async function getLocationFromGMaps(event, slug_venue) {
-  const chalk = (await import("chalk").then((mod) => mod)).default;
+  const chalk = (await import('chalk').then((mod) => mod)).default;
 
   const params = {
     input: event.venue,
-    inputtype: "textquery",
+    inputtype: 'textquery',
     key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-    fields: ["place_id", "name", "formatted_address", "geometry"],
-    locationbias: "circle:30000@41.8336152,-87.8967663",
+    fields: ['place_id', 'name', 'formatted_address', 'geometry'],
+    locationbias: 'circle:30000@41.8336152,-87.8967663',
   };
 
   await sleep();
@@ -38,30 +38,31 @@ async function getLocationFromGMaps(event, slug_venue) {
     .catch((error) => logger.error(error));
 
   if (
-    !Array.isArray(gmapsResponse.data?.candidates) ||
-    !gmapsResponse.data.candidates.length
+    !Array.isArray(gmapsResponse.data?.candidates)
+    || !gmapsResponse.data.candidates.length
   ) {
-    logger.info(chalk.red(`gps not found`), {
+    logger.info(chalk.red('gps not found'), {
       venue: event.venue,
     });
 
     return;
   }
 
-  const { formatted_address, geometry, name, place_id } =
-    gmapsResponse.data.candidates[0];
+  const {
+    formatted_address, geometry, name, place_id,
+  } = gmapsResponse.data.candidates[0];
 
   const paramsDetails = {
     place_id,
     key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-    fields: ["website", "url"],
+    fields: ['website', 'url'],
   };
   const detailsResponse = await client.placeDetails({
     params: paramsDetails,
   });
 
   const { website, url } = detailsResponse.data.result;
-  logger.info("website found", { website });
+  logger.info('website found', { website });
 
   const payload = {
     name,
@@ -78,7 +79,7 @@ async function getLocationFromGMaps(event, slug_venue) {
 }
 
 async function getGMapsLocation(event) {
-  logger.info(`processing`, {
+  logger.info('processing', {
     venue: event.venue,
   });
 
@@ -86,7 +87,7 @@ async function getGMapsLocation(event) {
   const locationFromDB = await getLocationFromDB(slug_venue);
 
   if (locationFromDB) {
-    logger.info("location found", {
+    logger.info('location found', {
       slug_venue,
       website: locationFromDB.website,
     });
@@ -97,7 +98,7 @@ async function getGMapsLocation(event) {
   const location = await getLocationFromGMaps(event, slug_venue);
 
   if (!location) {
-    logger.error("NO_LOCATION", event);
+    logger.error('NO_LOCATION', event);
     return;
   }
 
@@ -108,7 +109,7 @@ async function getGMapsLocation(event) {
 
   const website = new URL(event.url);
   if (!location.website?.includes(website.host)) {
-    logger.error("ERROR_WEBSITE", {
+    logger.error('ERROR_WEBSITE', {
       provider: preEvent.provider,
       url: preEvent.url,
       maps: location.website,
