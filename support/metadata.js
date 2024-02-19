@@ -6,6 +6,21 @@ const logger = require("./logger")(path.basename(__filename));
 
 const { getSocial, getImageFromURL } = require("./misc");
 
+const metadataProps = [
+  "website",
+  "image",
+  "twitter",
+  "facebook",
+  "youtube",
+  "instagram",
+  "tiktok",
+  "soundcloud",
+  "appleMusic",
+  "spotify",
+  "band_camp",
+  "link_tree",
+];
+
 async function getMetadata(url) {
   logger.info(`scrapping`, { url });
 
@@ -46,4 +61,5 @@ async function getMetadata(url) {
 
 module.exports = {
   getMetadata,
+  metadataProps,
 };

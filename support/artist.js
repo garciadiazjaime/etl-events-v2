@@ -6,6 +6,7 @@ const { getDataFromWebsite, getImageFromURL } = require("./misc");
 const { getMusicbrainz } = require("./musicbrainz");
 const { getArtists } = require("./mint");
 const { getSpotify } = require("./spotify");
+const { metadataProps } = require("./metadata");
 
 const logger = require("./logger")("artist");
 
@@ -103,7 +104,38 @@ async function getArtist(event) {
   return response;
 }
 
+function mergeArtist(artistA, artistB) {
+  if (!artistA && !artistB) {
+    return;
+  }
+
+  if (!artistA) {
+    return artistB;
+  }
+
+  if (!artistB) {
+    return artistA;
+  }
+
+  const artist = {
+    pk: artistA.pk || artistB.pk,
+    name: artistA.name || artistB.name,
+    profile: artistA.profile || artistB.profile,
+    genres: artistA.genres || artistB.genres,
+    spotify: artistA.spotify || artistB.spotify,
+    metadata: {},
+  };
+
+  metadataProps.forEach((prop) => {
+    artist.metadata[prop] =
+      artistA.metadata?.[prop] || artistB.metadata?.[prop];
+  });
+
+  return artist;
+}
+
 module.exports = {
   getArtist,
   getArtistSingle,
+  mergeArtist,
 };

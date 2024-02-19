@@ -11,6 +11,7 @@ const sleep = async (ms = 1_000) => {
 };
 
 const regexTime = /(1[0-2]|0?[1-9]):([0-5][0-9])\s?([AaPp][Mm])/;
+const regexMoney = /\$(\d)+/;
 
 const snakeCase = (value) => value.trim().replace(/ /g, "_");
 
@@ -18,7 +19,7 @@ const urlValidRegex =
   /https?:\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,})(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?/i;
 const twitterRegex = /http(?:s)?:\/\/(?:www\.)?twitter\.com\/([a-zA-Z0-9_]+)/gi;
 const facebookRegex =
-  /http(?:s)?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9_]+)/gi;
+  /http(?:s)?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9_\.]+)/gi;
 const youtubeSimpleRegex =
   /http(?:s)?:\/\/(?:www\.)?youtube\.com\/([@a-zA-Z0-9_]+)/;
 const youtubeRegex =
@@ -84,19 +85,26 @@ const getFacebook = (value) => {
 
   return facebook;
 };
-const getYoutube = (value) => {
-  const youtube =
-    value.match(youtubeSimpleRegex)?.[0] || value.match(youtubeRegex)?.[0];
 
-  if (
-    [
-      "https://www.youtube.com/c",
-      "https://www.youtube.com/watch",
-      "https://www.youtube.com/channel",
-      "https://www.youtube.com/embed",
-      "https://www.youtube.com/user",
-    ].find((item) => item === youtube)
-  ) {
+const isYoutubeValid = (value) =>
+  ![
+    "https://www.youtube.com/c",
+    "https://www.youtube.com/watch",
+    "https://www.youtube.com/channel",
+    "https://www.youtube.com/embed",
+    "https://www.youtube.com/user",
+  ].find((item) => item === value);
+
+const getYoutube = (value) => {
+  let youtube = value.match(youtubeSimpleRegex)?.[0];
+
+  if (!isYoutubeValid(youtube)) {
+    youtube = value.match(youtubeRegex)?.[0];
+
+    if (isYoutubeValid(youtube)) {
+      return youtube;
+    }
+
     return;
   }
 
@@ -146,6 +154,22 @@ const getSocial = (html, website) => {
   const appleMusic = getAppleMusic(html);
   const band_camp = getBandCamp(html);
   const link_tree = getLinkTree(html);
+
+  if (
+    !image &&
+    !twitter &&
+    !facebook &&
+    !youtube &&
+    !instagram &&
+    !tiktok &&
+    !soundcloud &&
+    !spotify &&
+    !appleMusic &&
+    !band_camp &&
+    !link_tree
+  ) {
+    return {};
+  }
 
   return {
     website,
@@ -251,4 +275,5 @@ module.exports = {
   getSocialNetworkFrom,
   getInstagram,
   regexTime,
+  regexMoney,
 };
