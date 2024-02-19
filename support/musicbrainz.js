@@ -54,7 +54,7 @@ async function getSocialFromProfile(profile) {
 
   const genres = getGenres(html);
 
-  $ = cheerio.load(html);
+  const $ = cheerio.load(html);
 
   const links = [
     ['website', 'home-favicon'],
