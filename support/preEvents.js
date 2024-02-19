@@ -1,9 +1,9 @@
 const async = require('async');
 const path = require('path');
 
-const { getGMapsLocation } = require('./gps.js');
-const { saveEvent } = require('./mint.js');
-const { getArtistSingle } = require('./artist.js');
+const { getGMapsLocation } = require('./gps');
+const { saveEvent } = require('./mint');
+const { getArtistSingle } = require('./artist');
 
 const logger = require('./logger')(path.basename(__filename));
 

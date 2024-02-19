@@ -1,13 +1,13 @@
 const async = require('async');
 const path = require('path');
 
-const { getGMapsLocation } = require('../support/gps.js');
-const { saveEvent } = require('../support/mint.js');
-const { getArtistSingle } = require('../support/artist.js');
-const { extractJSON } = require('../support/extract.js');
-const { mergeArtist } = require('../support/artist.js');
-const { getSpotify } = require('../support/spotify.js');
-const { getMetadata } = require('../support/metadata.js');
+const { getGMapsLocation } = require('../support/gps');
+const { saveEvent } = require('../support/mint');
+const { getArtistSingle } = require('../support/artist');
+const { extractJSON } = require('../support/extract');
+const { mergeArtist } = require('../support/artist');
+const { getSpotify } = require('../support/spotify');
+const { getMetadata } = require('../support/metadata');
 
 const logger = require('../support/logger')(path.basename(__filename));
 
@@ -120,7 +120,7 @@ async function main() {
 
   // todo: this api-key might expire
   const html = await extractJSON(
-    'https://app.ticketmaster.com/discovery/v2/events.json?size=50&apikey=Mj9g4ZY7tXTmixNb7zMOAP85WPGAfFL8&venueId=rZ7HnEZ17aJq7&venueId=KovZpZAktlaA',
+    'https://app.ticketmaster.com/discovery/v2/eventson?size=50&apikey=Mj9g4ZY7tXTmixNb7zMOAP85WPGAfFL8&venueId=rZ7HnEZ17aJq7&venueId=KovZpZAktlaA',
     {
       headers: {
         'Content-Type': 'application/json',

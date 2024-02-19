@@ -1,5 +1,5 @@
-const { extractJSON } = require('../support/extract.js');
-const { processEventsWithArtist } = require('../support/preEvents.js');
+const { extractJSON } = require('../support/extract');
+const { processEventsWithArtist } = require('../support/preEvents');
 
 function transform(data, preEvent) {
   const url = `${preEvent.url}/${preEvent.city.toLowerCase()}/events`;

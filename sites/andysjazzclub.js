@@ -3,7 +3,7 @@ const moment = require('moment');
 
 const { extract } = require('../support/extract');
 const { regexTime } = require('../support/misc');
-const { processEventsWithArtist } = require('../support/preEvents.js');
+const { processEventsWithArtist } = require('../support/preEvents');
 
 function transform(html, preEvent) {
   const $ = cheerio.load(html);

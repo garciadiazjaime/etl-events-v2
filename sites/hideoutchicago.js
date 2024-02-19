@@ -3,13 +3,13 @@ const async = require('async');
 const moment = require('moment');
 const path = require('path');
 
-const { getMetadata } = require('../support/metadata.js');
-const { getGMapsLocation } = require('../support/gps.js');
-const { getSpotify } = require('../support/spotify.js');
-const { saveEvent } = require('../support/mint.js');
-const { extract } = require('../support/extract.js');
-const { getArtistSingle } = require('../support/artist.js');
-const { regexTime } = require('../support/misc.js');
+const { getMetadata } = require('../support/metadata');
+const { getGMapsLocation } = require('../support/gps');
+const { getSpotify } = require('../support/spotify');
+const { saveEvent } = require('../support/mint');
+const { extract } = require('../support/extract');
+const { getArtistSingle } = require('../support/artist');
+const { regexTime } = require('../support/misc');
 
 const logger = require('../support/logger')(path.basename(__filename));
 

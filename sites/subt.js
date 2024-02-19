@@ -1,8 +1,8 @@
 const cheerio = require('cheerio');
 const moment = require('moment');
 
-const { extract } = require('../support/extract.js');
-const { processEventsWithArtist } = require('../support/preEvents.js');
+const { extract } = require('../support/extract');
+const { processEventsWithArtist } = require('../support/preEvents');
 
 function transform(html) {
   const $ = cheerio.load(html);

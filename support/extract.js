@@ -1,4 +1,4 @@
-const logger = require('./logger.js')('extract');
+const logger = require('./logger')('extract');
 
 async function extract(url) {
   logger.info('scrapping', { url });

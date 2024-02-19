@@ -3,11 +3,11 @@ const async = require('async');
 const moment = require('moment');
 const path = require('path');
 
-const { getGMapsLocation } = require('../support/gps.js');
-const { saveEvent } = require('../support/mint.js');
-const { getSocialNetworkFrom, getInstagram } = require('../support/misc.js');
-const { getArtistSingle } = require('../support/artist.js');
-const { extract } = require('../support/extract.js');
+const { getGMapsLocation } = require('../support/gps');
+const { saveEvent } = require('../support/mint');
+const { getSocialNetworkFrom, getInstagram } = require('../support/misc');
+const { getArtistSingle } = require('../support/artist');
+const { extract } = require('../support/extract');
 
 const logger = require('../support/logger')(path.basename(__filename));
 

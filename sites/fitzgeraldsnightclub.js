@@ -3,10 +3,10 @@ const async = require('async');
 const moment = require('moment');
 const path = require('path');
 
-const { getGMapsLocation } = require('../support/gps.js');
-const { saveEvent } = require('../support/mint.js');
-const { extract } = require('../support/extract.js');
-const { getArtistsDetails } = require('../support/preEvents.js');
+const { getGMapsLocation } = require('../support/gps');
+const { saveEvent } = require('../support/mint');
+const { extract } = require('../support/extract');
+const { getArtistsDetails } = require('../support/preEvents');
 
 const logger = require('../support/logger')(path.basename(__filename));
 

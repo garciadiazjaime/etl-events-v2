@@ -1,5 +1,5 @@
-const { extractJSON } = require('../support/extract.js');
-const { processEventsWithArtist } = require('../support/preEvents.js');
+const { extractJSON } = require('../support/extract');
+const { processEventsWithArtist } = require('../support/preEvents');
 
 function transform(data, preEvent) {
   const events = data.data.map((event) => ({
@@ -9,7 +9,7 @@ function transform(data, preEvent) {
     start_date: event.date,
     description: event.description,
     buyUrl: event.url,
-    price: event.ticket_types?.[0].price.total / 100,
+    price: event.ticket_types?.[0].price.total / 100 || '',
     artists: event.artists?.map((artistName) => ({
       name: artistName,
     })),
