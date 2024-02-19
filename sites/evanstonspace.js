@@ -138,7 +138,9 @@ async function main() {
   const html = await extractJSON(
     "https://app.ticketmaster.com/discovery/v2/events.json?size=50&apikey=8GdH3nQcFnnZkzWGuPSGkh9oIKUGjffQ&venueId=KovZpakJQe&venueId=rZ7HnEZ173FQ4&venueId=rZ7HnEZ17fSA4&source=ticketmaster,ticketweb",
     {
-      "Content-Type": "application/json",
+      headers: {
+        "Content-Type": "application/json",
+      },
     }
   );
 

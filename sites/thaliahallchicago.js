@@ -1,26 +1,17 @@
 const async = require("async");
+const path = require("path");
 
-const { getMetadata } = require("../metadata.js");
-const { getGMapsLocation } = require("../gps.js");
-const { getSpotify } = require("../spotify.js");
-const { saveEvent } = require("../mint.js");
-const { getArtistSingle } = require("../artist.js");
-const logger = require("../support/logger.js")("THALIA_HALL");
+const { getGMapsLocation } = require("../support/gps.js");
+const { saveEvent } = require("../support/mint.js");
+const { getArtistSingle } = require("../support/artist.js");
+const { extractJSON } = require("../support/extract.js");
+const { mergeArtist } = require("../support/artist.js");
+const { getSpotify } = require("../support/spotify.js");
+const { getMetadata } = require("../support/metadata.js");
 
-async function extract(url) {
-  logger.info("scrapping", { url });
-  const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+const logger = require("../support/logger")(path.basename(__filename));
 
-  const data = await response.json();
-
-  return data;
-}
-
-function transform(data, location) {
+function transform(data) {
   const events = data._embedded?.events.map((event) => {
     return {
       name: event.name,
@@ -78,101 +69,97 @@ function transform(data, location) {
           metadata,
         };
       }),
-      provider: location.provider,
-      venue: location.venue,
-      city: location.city,
     };
   });
 
   return events;
 }
 
-async function getArtists(event) {
-  const artists = [];
+async function getDetails(event) {
+  const response = { artists: [] };
 
   await async.eachSeries(event.artists, async (preArtist) => {
-    const artist = await getArtistSingle(preArtist.name);
+    const artistSingle = await getArtistSingle(preArtist.name);
 
-    if (!artist) {
-      return preArtist;
+    const metadata = await getMetadata(preArtist.metadata.website);
+    const spotify = await getSpotify(preArtist);
+
+    const newArtist = mergeArtist(
+      {
+        metadata,
+        spotify,
+      },
+      preArtist
+    );
+
+    if (!Object.keys(newArtist.metadata).length && artistSingle) {
+      response.artists.push(artistSingle);
+      return;
     }
 
-    if (!artist.genres?.length) {
-      artist.genres = preArtist.genres;
+    const artistMerged = mergeArtist(newArtist, artistSingle);
+
+    if (artistMerged) {
+      response.artists.push(artistMerged);
     }
-
-    const props = [
-      "youtube",
-      "twitter",
-      "appleMusic",
-      "facebook",
-      "spotify",
-      "instagram",
-      "website",
-      "wiki",
-      "musicbrainz",
-      "lastfm",
-      "image",
-    ];
-
-    if (preArtist.metadata && !artist.metadata) {
-      artist.metadata = {};
-    }
-
-    props.forEach((prop) => {
-      if (!artist.metadata[prop]) {
-        artist.metadata[prop] = preArtist.metadata[prop];
-      }
-    });
-
-    const spotify = await getSpotify(artist);
-    if (spotify) {
-      artist.spotify = spotify;
-    }
-
-    artists.push(artist);
   });
 
-  return artists;
+  return response;
 }
 
 async function main() {
-  const preLocation = {
+  const venue = {
     venue: "Thalia Hall",
     provider: "THALIA_HALL",
     city: "Chicago",
-    website: "https://www.thaliahallchicago.com/",
+    url: "https://www.thaliahallchicago.com/",
   };
-  const location = await getGMapsLocation(preLocation);
+  const location = await getGMapsLocation(venue);
 
-  if (!location.website?.includes("thaliahallchicago.com")) {
-    logger.error("ERROR_WEBSITE", {
-      website: preLocation.website,
-      maps: location.website,
-    });
-  }
-
-  if (!location.metadata) {
-    const locationMetadata = await getMetadata(preLocation.website);
-    location.metadata = locationMetadata;
+  if (!location) {
+    return;
   }
 
   // todo: this api-key might expire
-  const html = await extract(
-    "https://app.ticketmaster.com/discovery/v2/events.json?size=50&apikey=Mj9g4ZY7tXTmixNb7zMOAP85WPGAfFL8&venueId=rZ7HnEZ17aJq7&venueId=KovZpZAktlaA"
+  const html = await extractJSON(
+    "https://app.ticketmaster.com/discovery/v2/events.json?size=50&apikey=Mj9g4ZY7tXTmixNb7zMOAP85WPGAfFL8&venueId=rZ7HnEZ17aJq7&venueId=KovZpZAktlaA",
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
   );
 
-  const preEvents = transform(html, preLocation);
+  const preEvents = transform(html);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const artists = await getArtists(preEvent);
+    const { name, image, url, start_date, description, buyUrl, price } =
+      preEvent;
+    const { artists } = await getDetails(preEvent);
 
-    const event = { ...preEvent, artists, location };
-    console.log(JSON.stringify(event, null, 2));
+    const event = {
+      name,
+      image,
+      url,
+      start_date,
+      description,
+      buyUrl,
+      price,
+      artists,
+      location,
+      provider: venue.provider,
+      venue: venue.venue,
+      city: venue.city,
+    };
+
     await saveEvent(event);
   });
+
+  logger.info("processed", { total: preEvents.length });
 }
 
-main().then(() => {
-  console.log("end");
-});
+if (require.main === module) {
+  main().then(() => {});
+}
+
+module.exports = main;
