@@ -36,7 +36,9 @@ const validURL = (value) => urlValidRegex.test(value);
 const getURL = (value) => value.match(urlValidRegex)?.[0];
 
 const removeHTML = (value) => value.replace(/(<([^>]+)>)/gi, '');
+const removeEmptySpaces = (value) => value?.trim().replace(regexEmptySpaces, '');
 const getPrice = (value) => value?.trim().match(regexMoney)?.[1];
+const getTime = (value) => value?.trim().match(regexTime)?.[0];
 
 const getImage = (html, website) => {
   const $ = cheerio.load(html);
@@ -191,7 +193,9 @@ const getSocialPlusSite = (html) => {
   const social = getSocial(html);
   const networks = Object.keys(social).filter((item) => item);
 
-  const website = html.match(urlValidRegex).filter((link) => !networks.find((network) => link.includes(network)));
+  const website = html
+    .match(urlValidRegex)
+    .filter((link) => !networks.find((network) => link.includes(network)));
 
   return {
     ...social,
@@ -289,4 +293,6 @@ module.exports = {
   removeHTML,
   getPrice,
   getSocialPlusSite,
+  getTime,
+  removeEmptySpaces,
 };
