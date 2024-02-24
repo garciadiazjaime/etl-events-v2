@@ -10,15 +10,17 @@ const sleep = async (ms = 1_000) => {
   await new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const regexTime = /(1[0-2]|0?[1-9]):([0-5][0-9])\s?([AaPp][Mm])/;
-const regexMoney = /\$(\d)+/;
+const regexTime = /((1[0-2]|0?[1-9]):([0-5][0-9])\s?([AaPp][Mm]))|(1[0-2]|0?[1-9])([AaPp][Mm])/;
+const regexMoney = /\$(\d+)/;
+const regexEmptySpaces = /(\r\n|\n|\r|\t)/g;
 
 const snakeCase = (value) => value.trim().replace(/ /g, '_');
 
-const urlValidRegex = /https?:\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,})(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?/i;
+const urlValidRegex = /https?:\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,})(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?/gi;
 const twitterRegex = /http(?:s)?:\/\/(?:www\.)?twitter\.com\/([a-zA-Z0-9_]+)/gi;
 const facebookRegex = /http(?:s)?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9_\.]+)/gi;
 const youtubeSimpleRegex = /http(?:s)?:\/\/(?:www\.)?youtube\.com\/([@a-zA-Z0-9_]+)/;
+const youtubeWatchRegex = /https?:\/\/(?:www\.)?youtube\.com\/watch\?[^"]+/;
 const youtubeRegex = /https?:\/\/(?:www\.)?youtube\.com\/(?:embed\/|channel\/|user\/|watch\?v=|[^\/]+)([a-zA-Z0-9_-]+)/;
 const instagramRegex = /http(?:s)?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_\.]+)/gi;
 const tiktokRegex = /http(?:s)?:\/\/(?:www\.)?tiktok\.com\/([a-zA-Z0-9_]+)/gi;
@@ -31,7 +33,10 @@ const linkTreeRegex = /http(?:s)?:\/\/(?:www\.)?linktr\.ee\/([a-zA-Z0-9_]+)/i;
 
 const validURL = (value) => urlValidRegex.test(value);
 
-const getURL = (value) => value.match(urlValidRegex)?.pop();
+const getURL = (value) => value.match(urlValidRegex)?.[0];
+
+const removeHTML = (value) => value.replace(/(<([^>]+)>)/gi, '');
+const getPrice = (value) => value?.trim().match(regexMoney)?.[1];
 
 const getImage = (html, website) => {
   const $ = cheerio.load(html);
@@ -82,19 +87,23 @@ const isYoutubeValid = (value) => ![
   'https://www.youtube.com/channel',
   'https://www.youtube.com/embed',
   'https://www.youtube.com/user',
+  'https://www.youtube.com/embed/watch',
 ].find((item) => item === value);
 
-const getYoutube = (value) => {
+const getYoutube = (_value) => {
+  const value = _value.replace(/&amp;/g, '&');
   let youtube = value.match(youtubeSimpleRegex)?.[0];
 
   if (!isYoutubeValid(youtube)) {
-    youtube = value.match(youtubeRegex)?.[0];
+    youtube = value.match(youtubeWatchRegex)?.[0];
 
-    if (isYoutubeValid(youtube)) {
-      return youtube;
+    if (!isYoutubeValid(youtube)) {
+      youtube = value.match(youtubeRegex)?.[0];
+
+      if (!isYoutubeValid(youtube)) {
+        return;
+      }
     }
-
-    return;
   }
 
   return youtube;
@@ -130,6 +139,10 @@ const getSpotify = (value) => value.match(spotifyRegex)?.filter((item) => item.i
 const getAppleMusic = (value) => value.match(appleMusicRegex)?.pop();
 
 const getSocial = (html, website) => {
+  if (!html) {
+    return {};
+  }
+
   const image = getImage(html, website);
   const twitter = getTwitter(html);
   const facebook = getFacebook(html);
@@ -171,6 +184,18 @@ const getSocial = (html, website) => {
     appleMusic,
     band_camp,
     link_tree,
+  };
+};
+
+const getSocialPlusSite = (html) => {
+  const social = getSocial(html);
+  const networks = Object.keys(social).filter((item) => item);
+
+  const website = html.match(urlValidRegex).filter((link) => !networks.find((network) => link.includes(network)));
+
+  return {
+    ...social,
+    website,
   };
 };
 
@@ -260,4 +285,8 @@ module.exports = {
   getInstagram,
   regexTime,
   regexMoney,
+  regexEmptySpaces,
+  removeHTML,
+  getPrice,
+  getSocialPlusSite,
 };

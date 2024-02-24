@@ -95,6 +95,7 @@ async function getDetails(url) {
 
 async function main() {
   // todo: Pagination
+  // todo: this place is also registered in google as "Fitzgerald's Sidebar", admin has the two locations, they should be merged.
   const venue = {
     venue: "FitzGerald's",
     provider: 'FITZGERALDS',

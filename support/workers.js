@@ -25,7 +25,7 @@ async function main() {
       }
 
       if (job.name === 'event') {
-        const location = await getGMapsLocation(job.data);
+        const location = await getGMapsLocation(job.data, false);
 
         if (!location) {
           logger.info('no-location', job.data);
@@ -51,13 +51,6 @@ async function main() {
 
         if (['SONGKICK'].includes(job.data.provider)) {
           const artists = await getArtist(job.data);
-
-          await async.eachSeries(artists, async (artist) => {
-            const spotify = await getSpotify(artist);
-            if (spotify) {
-              artist.spotify = spotify;
-            }
-          });
 
           event.artists = artists;
         }

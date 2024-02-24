@@ -32,7 +32,7 @@ const getToken = async () => {
     logger.info('token response', data);
     return;
   }
-
+  // console.log('spotify-token', data.access_token);
   return data.access_token;
 };
 

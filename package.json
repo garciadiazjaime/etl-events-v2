@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "w": "nodemon workers",
-    "q": "node queue",
+    "w": "nodemon ./support/workers",
+    "q": "node ./support/queue",
     "lint": "eslint . --fix"
   },
   "keywords": [],

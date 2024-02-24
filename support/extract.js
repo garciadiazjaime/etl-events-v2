@@ -1,9 +1,9 @@
 const logger = require('./logger')('extract');
 
-async function extract(url) {
+async function extract(url, headers) {
   logger.info('scrapping', { url });
 
-  const response = await fetch(url);
+  const response = await fetch(url, headers);
 
   const html = await response.text();
 

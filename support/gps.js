@@ -1,10 +1,13 @@
+const path = require('path');
 const { Client } = require('@googlemaps/google-maps-services-js');
 const slugify = require('slugify');
 require('dotenv').config();
 
 const { getLocations } = require('./mint');
 const { sleep } = require('./misc');
-const logger = require('./logger')('gps');
+const { getMetadata } = require('./metadata');
+
+const logger = require('./logger')(path.basename(__filename));
 
 async function getLocationFromDB(slug_venue) {
   const query = `slug_venue=${slug_venue}`;
@@ -78,12 +81,12 @@ async function getLocationFromGMaps(event, slug_venue) {
   return payload;
 }
 
-async function getGMapsLocation(event) {
+async function getGMapsLocation(venue, checkWebsite = true) {
   logger.info('processing', {
-    venue: event.venue,
+    venue: venue.venue,
   });
 
-  const slug_venue = slugify(event.venue, { lower: true, strict: true });
+  const slug_venue = slugify(venue.venue, { lower: true, strict: true });
   const locationFromDB = await getLocationFromDB(slug_venue);
 
   if (locationFromDB) {
@@ -95,23 +98,23 @@ async function getGMapsLocation(event) {
     return locationFromDB;
   }
 
-  const location = await getLocationFromGMaps(event, slug_venue);
+  const location = await getLocationFromGMaps(venue, slug_venue);
 
   if (!location) {
-    logger.error('NO_LOCATION', event);
+    logger.error('NO_LOCATION', venue);
     return;
   }
 
   if (!location.metadata) {
-    const locationMetadata = await getMetadata(url);
+    const locationMetadata = await getMetadata(location.url);
     location.metadata = locationMetadata;
   }
 
-  const website = new URL(event.url);
-  if (!location.website?.includes(website.host)) {
+  const website = new URL(venue.url);
+  if (checkWebsite && !location.website?.includes(website.host)) {
     logger.error('ERROR_WEBSITE', {
-      provider: preEvent.provider,
-      url: preEvent.url,
+      provider: venue.provider,
+      url: venue.url,
       maps: location.website,
     });
   }

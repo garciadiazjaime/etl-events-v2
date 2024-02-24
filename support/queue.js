@@ -12,21 +12,21 @@ async function main() {
     },
   });
 
-  // const links = getLinks();
+  const links = getLinks();
 
-  // const promises = links.map(async (link) => {
-  //   await myQueue.add("link", link);
-  // });
-
-  // await Promise.all(promises);
-
-  const providers = getProviders();
-
-  const promises = providers.map(async (provider) => {
-    await myQueue.add('provider', provider);
+  const promises = links.map(async (link) => {
+    await myQueue.add('link', link);
   });
 
   await Promise.all(promises);
+
+  // const providers = getProviders();
+
+  // const promises = providers.map(async (provider) => {
+  //   await myQueue.add('provider', provider);
+  // });
+
+  // await Promise.all(promises);
 }
 
 main().then(() => {
