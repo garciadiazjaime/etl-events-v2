@@ -43,7 +43,10 @@ async function processEventsWithArtist(venue, preEvents) {
     await saveEvent(event);
   });
 
-  logger.info("processed", { total: preEvents.length });
+  logger.info("processed", {
+    total: preEvents.length,
+    provider: venue.provider,
+  });
 }
 
 async function processEventsWithArtistDetails(venue, preEvents) {
@@ -76,7 +79,10 @@ async function processEventsWithArtistDetails(venue, preEvents) {
     await saveEvent(event);
   });
 
-  logger.info("processed", { total: preEvents.length });
+  logger.info("processed", {
+    total: preEvents.length,
+    provider: venue.provider,
+  });
 }
 
 async function processEventWithArtistDetails(venue, location, preEvent) {
@@ -141,7 +147,10 @@ async function processEventsWithoutArtist(venue, preEvents) {
     await saveEvent(event);
   });
 
-  logger.info("processed", { total: preEvents.length });
+  logger.info("processed", {
+    total: preEvents.length,
+    provider: venue.provider,
+  });
 }
 
 module.exports = {

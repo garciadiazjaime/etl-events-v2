@@ -161,7 +161,10 @@ async function main() {
     });
   });
 
-  logger.info("processed", { total: preEvents.length });
+  logger.info("processed", {
+    total: preEvents.length,
+    provider: venue.provider,
+  });
 }
 
 if (require.main === module) {

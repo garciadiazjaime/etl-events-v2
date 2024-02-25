@@ -126,9 +126,9 @@ async function main() {
     return;
   }
 
-  // todo: this api-key might expire
+  // todo: this api-key seems to expired after 7 days
   const html = await extractJSON(
-    "https://app.ticketmaster.com/discovery/v2/eventson?size=50&apikey=Mj9g4ZY7tXTmixNb7zMOAP85WPGAfFL8&venueId=rZ7HnEZ17aJq7&venueId=KovZpZAktlaA",
+    "https://app.ticketmaster.com/discovery/v2/events.json?size=200&apikey=Mj9g4ZY7tXTmixNb7zMOAP85WPGAfFL8&venueId=rZ7HnEZ17aJq7&venueId=KovZpZAktlaA",
     {
       headers: {
         "Content-Type": "application/json",
@@ -153,7 +153,10 @@ async function main() {
     await saveEvent(event);
   });
 
-  logger.info("processed", { total: preEvents.length });
+  logger.info("processed", {
+    total: preEvents.length,
+    provider: venue.provider,
+  });
 }
 
 if (require.main === module) {

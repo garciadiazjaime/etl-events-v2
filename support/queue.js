@@ -1,17 +1,25 @@
 const { Queue } = require("bullmq");
+const async = require("async");
 
-const { getLinks, getProviders } = require("./links");
+const { getLinks } = require("./links");
+const { PROVIDERS } = require("../sites");
 
 require("dotenv").config();
 
-async function queueSites(myQueue) {
-  const providers = getProviders();
+async function queueAggregators(myQueue) {
+  const links = getLinks();
 
-  const promises = providers.map(async (provider) => {
-    await myQueue.add("provider", provider);
+  const promises = links.map(async (link) => {
+    await myQueue.add("link", link);
   });
 
   await Promise.all(promises);
+}
+
+async function queueSites(myQueue) {
+  await async.eachSeries(PROVIDERS, async (PROVIDER) => {
+    await myQueue.add("provider", { name: PROVIDER });
+  });
 }
 
 async function main() {
@@ -22,18 +30,12 @@ async function main() {
     },
   });
 
-  const links = getLinks();
-
-  const promises = links.map(async (link) => {
-    await myQueue.add("link", link);
-  });
-
-  await Promise.all(promises);
-
   const flag = false;
   if (flag) {
-    await queueSites(myQueue);
+    await queueAggregators(myQueue);
   }
+
+  await queueSites(myQueue);
 }
 
 main().then(() => {

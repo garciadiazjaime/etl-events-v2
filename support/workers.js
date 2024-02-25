@@ -6,7 +6,7 @@ const { getGMapsLocation } = require("./gps");
 const { getMetadata } = require("./metadata");
 const { getArtist } = require("./artist");
 const { saveEvent } = require("./mint");
-const etl = require("../sites/andysjazzclub");
+const { SITE_ETL } = require("../sites");
 
 const logger = require("./logger")(path.basename(__filename));
 
@@ -59,7 +59,11 @@ async function main() {
       }
 
       if (job.name === "provider") {
-        await etl();
+        const siteETL = SITE_ETL[job.data.name];
+
+        if (typeof siteETL === "function") {
+          siteETL();
+        }
       }
     },
     {

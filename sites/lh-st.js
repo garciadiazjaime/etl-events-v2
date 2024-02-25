@@ -208,7 +208,10 @@ async function main() {
       await saveEvent(event);
     });
 
-    logger.info("processed", { total: preEvents.length });
+    logger.info("processed", {
+      total: preEvents.length,
+      provider: venue.provider,
+    });
   });
 }
 
