@@ -1,12 +1,12 @@
-const moment = require('moment');
+const moment = require("moment");
 
-const { extractJSON } = require('../support/extract');
-const { processEventsWithArtist } = require('../support/preEvents');
-const { removeHTML, getPrice } = require('../support/misc');
+const { extractJSON } = require("../support/extract");
+const { processEventsWithArtist } = require("../support/preEvents");
+const { removeHTML, getPrice } = require("../support/misc");
 
 function transform(data) {
   const events = data.map((event) => {
-    const start_date = moment(removeHTML(event.dateTime), 'ddd, MMM DD h:mma');
+    const start_date = moment(removeHTML(event.dateTime), "ddd, MMM DD h:mma");
 
     return {
       name: event.title,
@@ -27,15 +27,15 @@ function transform(data) {
 
 async function main() {
   const venue = {
-    venue: 'Sleeping Village',
-    provider: 'SLEEPING_VILLAGE',
-    city: 'Chicago',
-    url: 'https://sleeping-village.com/events/',
+    venue: "Sleeping Village",
+    provider: "SLEEPING_VILLAGE",
+    city: "Chicago",
+    url: "https://sleeping-village.com/events/",
   };
 
   // todo: dice seems like a good reference for live music events
   const data = await extractJSON(
-    'https://sleeping-village.com/api/plot/v1/listings?currentpage=1&notLoaded=false&listingsPerPage=48&_locale=user',
+    "https://sleeping-village.com/api/plot/v1/listings?currentpage=1&notLoaded=false&listingsPerPage=48&_locale=user",
   );
 
   const preEvents = transform(data, venue);

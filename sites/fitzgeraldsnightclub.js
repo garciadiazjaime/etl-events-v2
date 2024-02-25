@@ -1,43 +1,43 @@
-const cheerio = require('cheerio');
-const async = require('async');
-const moment = require('moment');
-const path = require('path');
+const cheerio = require("cheerio");
+const async = require("async");
+const moment = require("moment");
+const path = require("path");
 
-const { getGMapsLocation } = require('../support/gps');
-const { saveEvent } = require('../support/mint');
-const { extract } = require('../support/extract');
-const { getArtistsDetails } = require('../support/preEvents');
+const { getGMapsLocation } = require("../support/gps");
+const { saveEvent } = require("../support/mint");
+const { extract } = require("../support/extract");
+const { getArtistsDetails } = require("../support/preEvents");
 
-const logger = require('../support/logger')(path.basename(__filename));
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(html, preEvent) {
   const $ = cheerio.load(html);
   const regexTime = /(1[0-2]|0?[1-9]):([0-5][0-9]) ([AaPp][Mm])/;
   const regexMoney = /\$(\d)+/;
 
-  const events = $('.tw-plugin-upcoming-event-list .tw-section')
+  const events = $(".tw-plugin-upcoming-event-list .tw-section")
     .toArray()
     .map((item) => {
-      const name = $(item).find('.tw-name').text().trim();
-      const image = $(item).find('.tw-image img').attr('src');
-      const url = $(item).find('.tw-name a').attr('href');
-      const date = $(item).find('.tw-event-date').text().trim();
+      const name = $(item).find(".tw-name").text().trim();
+      const image = $(item).find(".tw-image img").attr("src");
+      const url = $(item).find(".tw-name a").attr("href");
+      const date = $(item).find(".tw-event-date").text().trim();
       const time = $(item)
-        .find('.tw-event-time')
+        .find(".tw-event-time")
         .text()
         .trim()
         .match(regexTime)?.[0];
 
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, 'ddd MMM D h:mm a');
-      const description = $(item).find('.tw-price').text().trim();
-      const buyUrl = $(item).find('a.tw-buy-tix-btn').attr('href');
+      const start_date = moment(dateTime, "ddd MMM D h:mm a");
+      const description = $(item).find(".tw-price").text().trim();
+      const buyUrl = $(item).find("a.tw-buy-tix-btn").attr("href");
       const price = $(item)
-        .find('.tw-price')
+        .find(".tw-price")
         .text()
         .match(regexMoney)?.[0]
-        ?.replace('$', '');
+        ?.replace("$", "");
       const { provider } = preEvent;
       const { venue } = preEvent;
       const { city } = preEvent;
@@ -63,10 +63,10 @@ function transform(html, preEvent) {
 
 function transformDetails(html) {
   const $ = cheerio.load(html);
-  const artists = $('.tw-artists-container .tw-artist')
+  const artists = $(".tw-artists-container .tw-artist")
     .toArray()
     .map((item) => {
-      const name = $(item).find('.tw-name').text().trim();
+      const name = $(item).find(".tw-name").text().trim();
 
       const artist = {
         name,
@@ -98,9 +98,9 @@ async function main() {
   // todo: this place is also registered in google as "Fitzgerald's Sidebar", admin has the two locations, they should be merged.
   const venue = {
     venue: "FitzGerald's",
-    provider: 'FITZGERALDS',
-    city: 'Chicago',
-    url: 'https://www.fitzgeraldsnightclub.com/shows/list/',
+    provider: "FITZGERALDS",
+    city: "Chicago",
+    url: "https://www.fitzgeraldsnightclub.com/shows/list/",
   };
   const location = await getGMapsLocation(venue);
 
@@ -120,7 +120,7 @@ async function main() {
     await saveEvent(event);
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 if (require.main === module) {

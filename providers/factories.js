@@ -1,6 +1,6 @@
-const { ChooseChicagoTransformer } = require('./ChooseChicagoTransformer');
-const { Do312Transformer, Do312Pages } = require('./Do312Transformer');
-const { SongkickTransformer, SongkickPages } = require('./SongkickTransformer');
+const { ChooseChicagoTransformer } = require("./ChooseChicagoTransformer");
+const { Do312Transformer, Do312Pages } = require("./Do312Transformer");
+const { SongkickTransformer, SongkickPages } = require("./SongkickTransformer");
 
 const providersMap = {
   CHOOSECHICAGO: {

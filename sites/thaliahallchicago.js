@@ -1,15 +1,15 @@
-const async = require('async');
-const path = require('path');
+const async = require("async");
+const path = require("path");
 
-const { getGMapsLocation } = require('../support/gps');
-const { saveEvent } = require('../support/mint');
-const { getArtistSingle } = require('../support/artist');
-const { extractJSON } = require('../support/extract');
-const { mergeArtist } = require('../support/artist');
-const { getSpotify } = require('../support/spotify');
-const { getMetadata } = require('../support/metadata');
+const { getGMapsLocation } = require("../support/gps");
+const { saveEvent } = require("../support/mint");
+const { getArtistSingle } = require("../support/artist");
+const { extractJSON } = require("../support/extract");
+const { mergeArtist } = require("../support/artist");
+const { getSpotify } = require("../support/spotify");
+const { getMetadata } = require("../support/metadata");
 
-const logger = require('../support/logger')(path.basename(__filename));
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(data) {
   const events = data._embedded?.events.map((event) => ({
@@ -23,17 +23,17 @@ function transform(data) {
     artists: event._embedded.attractions?.map((artist) => {
       const metadata = artist.externalLinks
         ? {
-          youtube: artist.externalLinks.youtube?.[0].url,
-          twitter: artist.externalLinks.twitter?.[0].url,
-          appleMusic: artist.externalLinks.itunes?.[0].url,
-          facebook: artist.externalLinks.facebook?.[0].url,
-          spotify: artist.externalLinks.spotify?.[0].url,
-          instagram: artist.externalLinks.instagram?.[0].url,
-          website: artist.externalLinks.homepage?.[0].url,
-          wiki: artist.externalLinks.wiki?.[0].url,
-          musicbrainz: artist.externalLinks.musicbrainz?.[0].url,
-          lastfm: artist.externalLinks.lastfm?.[0].url,
-        }
+            youtube: artist.externalLinks.youtube?.[0].url,
+            twitter: artist.externalLinks.twitter?.[0].url,
+            appleMusic: artist.externalLinks.itunes?.[0].url,
+            facebook: artist.externalLinks.facebook?.[0].url,
+            spotify: artist.externalLinks.spotify?.[0].url,
+            instagram: artist.externalLinks.instagram?.[0].url,
+            website: artist.externalLinks.homepage?.[0].url,
+            wiki: artist.externalLinks.wiki?.[0].url,
+            musicbrainz: artist.externalLinks.musicbrainz?.[0].url,
+            lastfm: artist.externalLinks.lastfm?.[0].url,
+          }
         : {};
 
       if (artist.images?.[0]) {
@@ -42,19 +42,19 @@ function transform(data) {
 
       const genres = Array.isArray(artist.classifications)
         ? artist.classifications.reduce((accumulator, classification) => {
-          if (classification.genre?.name) {
-            accumulator.push({
-              name: classification.genre.name,
-            });
-          }
-          if (classification.subGenre?.name) {
-            accumulator.push({
-              name: classification.subGenre.name,
-            });
-          }
+            if (classification.genre?.name) {
+              accumulator.push({
+                name: classification.genre.name,
+              });
+            }
+            if (classification.subGenre?.name) {
+              accumulator.push({
+                name: classification.subGenre.name,
+              });
+            }
 
-          return accumulator;
-        }, [])
+            return accumulator;
+          }, [])
         : [];
 
       // todo: save ticketmaster in BE
@@ -107,10 +107,10 @@ async function getDetails(event) {
 
 async function main() {
   const venue = {
-    venue: 'Thalia Hall',
-    provider: 'THALIA_HALL',
-    city: 'Chicago',
-    url: 'https://www.thaliahallchicago.com/',
+    venue: "Thalia Hall",
+    provider: "THALIA_HALL",
+    city: "Chicago",
+    url: "https://www.thaliahallchicago.com/",
   };
   const location = await getGMapsLocation(venue);
 
@@ -120,10 +120,10 @@ async function main() {
 
   // todo: this api-key might expire
   const html = await extractJSON(
-    'https://app.ticketmaster.com/discovery/v2/eventson?size=50&apikey=Mj9g4ZY7tXTmixNb7zMOAP85WPGAfFL8&venueId=rZ7HnEZ17aJq7&venueId=KovZpZAktlaA',
+    "https://app.ticketmaster.com/discovery/v2/eventson?size=50&apikey=Mj9g4ZY7tXTmixNb7zMOAP85WPGAfFL8&venueId=rZ7HnEZ17aJq7&venueId=KovZpZAktlaA",
     {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     },
   );
@@ -131,9 +131,8 @@ async function main() {
   const preEvents = transform(html);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const {
-      name, image, url, start_date, description, buyUrl, price,
-    } = preEvent;
+    const { name, image, url, start_date, description, buyUrl, price } =
+      preEvent;
     const { artists } = await getDetails(preEvent);
 
     const event = {
@@ -154,7 +153,7 @@ async function main() {
     await saveEvent(event);
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 if (require.main === module) {

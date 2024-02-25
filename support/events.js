@@ -1,12 +1,12 @@
-const async = require('async');
-const { Queue } = require('bullmq');
+const async = require("async");
+const { Queue } = require("bullmq");
 
-const { getTransformer, getPaginator } = require('../providers/factories');
-const logger = require('./logger')('events');
+const { getTransformer, getPaginator } = require("../providers/factories");
+const logger = require("./logger")("events");
 
-require('dotenv').config();
+require("dotenv").config();
 
-const queue = new Queue('livemusic', {
+const queue = new Queue("livemusic", {
   connection: {
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
@@ -28,16 +28,16 @@ function transform(html, link) {
 
 async function load(events) {
   await async.eachSeries(events, async (payload) => {
-    await queue.add('event', payload);
+    await queue.add("event", payload);
   });
 }
 
 async function processLink(links, getPages = true) {
   await async.eachSeries(links, async (link) => {
-    logger.info('scrapping', { url: link.url, getPages });
+    logger.info("scrapping", { url: link.url, getPages });
     const html = await extract(link.url);
     const events = transform(html, link);
-    logger.info('found', { total: events.length });
+    logger.info("found", { total: events.length });
 
     await load(events);
 

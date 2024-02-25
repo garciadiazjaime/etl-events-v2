@@ -1,20 +1,20 @@
-const async = require('async');
-const cheerio = require('cheerio');
-const path = require('path');
-const moment = require('moment');
+const async = require("async");
+const cheerio = require("cheerio");
+const path = require("path");
+const moment = require("moment");
 
-const { extract, extractJSON } = require('../support/extract');
-const { removeHTML, getPrice } = require('../support/misc');
-const { processEventWithArtist } = require('../support/preEvents');
-const { getGMapsLocation } = require('../support/gps');
+const { extract, extractJSON } = require("../support/extract");
+const { removeHTML, getPrice } = require("../support/misc");
+const { processEventWithArtist } = require("../support/preEvents");
+const { getGMapsLocation } = require("../support/gps");
 
-const logger = require('../support/logger')(path.basename(__filename));
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(data, venue) {
   const events = [];
 
   data.productions?.forEach((event) => {
-    if (!event.venuesJson?.includes('Symphony')) {
+    if (!event.venuesJson?.includes("Symphony")) {
       return;
     }
 
@@ -37,10 +37,10 @@ function transformDetails(html) {
     artists: [],
   };
 
-  $('#performers .persons__item')
+  $("#performers .persons__item")
     .toArray()
     .map((item) => {
-      const name = $(item).find('.persons__name').text().trim();
+      const name = $(item).find(".persons__name").text().trim();
 
       if (name) {
         response.artists.push({ name });
@@ -63,10 +63,10 @@ async function getDetails(event) {
 
 async function main() {
   const venue = {
-    venue: 'Chicago Symphony Orchestra',
-    provider: 'CHICAGO_SYMPHONY_ORCHESTRA',
-    city: 'Chicago',
-    url: 'https://cso.org/',
+    venue: "Chicago Symphony Orchestra",
+    provider: "CHICAGO_SYMPHONY_ORCHESTRA",
+    city: "Chicago",
+    url: "https://cso.org/",
   };
 
   const location = await getGMapsLocation(venue);
@@ -75,11 +75,11 @@ async function main() {
     return;
   }
 
-  const from = moment().subtract(1, 'days').toJSON();
+  const from = moment().subtract(1, "days").toJSON();
 
   const payload = {
     from,
-    paid: '',
+    paid: "",
     group: true,
     concerttypes: [],
     genres: [],
@@ -89,12 +89,12 @@ async function main() {
     page: 0,
   };
   const headers = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
   const data = await extractJSON(
-    'https://cso.org/umbraco/surface/events/calendar',
+    "https://cso.org/umbraco/surface/events/calendar",
     {
-      method: 'POST',
+      method: "POST",
       headers,
       body: JSON.stringify(payload),
     },
@@ -110,7 +110,7 @@ async function main() {
     });
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 if (require.main === module) {

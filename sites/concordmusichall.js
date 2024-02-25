@@ -1,38 +1,35 @@
-const async = require('async');
-const cheerio = require('cheerio');
-const path = require('path');
-const moment = require('moment');
+const async = require("async");
+const cheerio = require("cheerio");
+const path = require("path");
+const moment = require("moment");
 
-const { extract } = require('../support/extract');
-const {
-  regexTime, getPrice, getURL, getSocial,
-} = require('../support/misc');
-const { processEventWithArtistDetails } = require('../support/preEvents');
-const { getGMapsLocation } = require('../support/gps');
+const { extract } = require("../support/extract");
+const { regexTime, getPrice, getURL, getSocial } = require("../support/misc");
+const { processEventWithArtistDetails } = require("../support/preEvents");
+const { getGMapsLocation } = require("../support/gps");
 
-const logger = require('../support/logger')(path.basename(__filename));
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(html) {
   const $ = cheerio.load(html);
 
-  const events = $('article.group')
+  const events = $("article.group")
     .toArray()
     .map((item) => {
-      const name = $(item).find('h1').text().trim();
-      const image = getURL($(item).find('.img').attr('style'));
-      const url = $(item).find('a').first().attr('href');
-      const date = $(item).find('.date').text().trim();
-      const time = $(item).find('.doors').text().trim()
-        .match(regexTime)?.[0];
+      const name = $(item).find("h1").text().trim();
+      const image = getURL($(item).find(".img").attr("style"));
+      const url = $(item).find("a").first().attr("href");
+      const date = $(item).find(".date").text().trim();
+      const time = $(item).find(".doors").text().trim().match(regexTime)?.[0];
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, 'MMM D h:mm a');
-      const description = `${$(item).find('.age').text().trim()}, ${$(item)
-        .find('.doors')
+      const start_date = moment(dateTime, "MMM D h:mm a");
+      const description = `${$(item).find(".age").text().trim()}, ${$(item)
+        .find(".doors")
         .text()
         .trim()}`;
 
-      const price = getPrice($(item).find('.price').text());
+      const price = getPrice($(item).find(".price").text());
 
       return {
         name,
@@ -50,26 +47,27 @@ function transform(html) {
 function transformDetails(html) {
   const $ = cheerio.load(html);
 
-  const title = $('#main h1').first().text().trim();
-  const metadata = getSocial($('#main .embeds.group').html());
+  const title = $("#main h1").first().text().trim();
+  const metadata = getSocial($("#main .embeds.group").html());
   const mainArtist = {
-    name: title.toLowerCase().split('presents')[0].split('-')[0].trim(),
+    name: title.toLowerCase().split("presents")[0].split("-")[0].trim(),
     metadata,
   };
 
-  const subtitle = $('#main h2').first().text().trim();
+  const subtitle = $("#main h2").first().text().trim();
 
-  const extraArtists = (subtitle.length
-      && subtitle
-        .split('/')[1]
-        ?.replace('and', '')
-        ?.split(',')
+  const extraArtists =
+    (subtitle.length &&
+      subtitle
+        .split("/")[1]
+        ?.replace("and", "")
+        ?.split(",")
         .map((name) => ({
           name: name.trim(),
-        })))
-    || [];
+        }))) ||
+    [];
 
-  const buyUrl = $('#main a.btn').first().attr('href');
+  const buyUrl = $("#main a.btn").first().attr("href");
 
   return { artists: [mainArtist, ...extraArtists], buyUrl };
 }
@@ -89,10 +87,10 @@ async function getDetails(preEvent) {
 async function main() {
   // todo: this is a nice page
   const venue = {
-    venue: 'Concord Music Hall',
-    provider: 'CONCORD_MUSIC_HALL',
-    city: 'Chicago',
-    url: 'https://concordmusichall.com/calendar/',
+    venue: "Concord Music Hall",
+    provider: "CONCORD_MUSIC_HALL",
+    city: "Chicago",
+    url: "https://concordmusichall.com/calendar/",
   };
 
   const location = await getGMapsLocation(venue);
@@ -116,7 +114,7 @@ async function main() {
     await processEventWithArtistDetails(venue, location, event);
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 if (require.main === module) {

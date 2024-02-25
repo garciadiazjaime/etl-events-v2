@@ -1,28 +1,28 @@
-const cheerio = require('cheerio');
-const async = require('async');
-const moment = require('moment');
-const path = require('path');
+const cheerio = require("cheerio");
+const async = require("async");
+const moment = require("moment");
+const path = require("path");
 
-const { getMetadata } = require('../support/metadata');
-const { getGMapsLocation } = require('../support/gps');
-const { getSpotify } = require('../support/spotify');
-const { saveEvent } = require('../support/mint');
-const { extract } = require('../support/extract');
-const { getArtistSingle } = require('../support/artist');
-const { regexTime } = require('../support/misc');
+const { getMetadata } = require("../support/metadata");
+const { getGMapsLocation } = require("../support/gps");
+const { getSpotify } = require("../support/spotify");
+const { saveEvent } = require("../support/mint");
+const { extract } = require("../support/extract");
+const { getArtistSingle } = require("../support/artist");
+const { regexTime } = require("../support/misc");
 
-const logger = require('../support/logger')(path.basename(__filename));
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transformEventDetails(html) {
   const $ = cheerio.load(html);
-  const price = $('.eventCost').text().trim().match(/\d+/)?.[0];
-  const buyUrl = $('.on-sale a').attr('href');
-  const artists = $('.singleEventDescription a')
+  const price = $(".eventCost").text().trim().match(/\d+/)?.[0];
+  const buyUrl = $(".on-sale a").attr("href");
+  const artists = $(".singleEventDescription a")
     .toArray()
     .map((item) => ({
       name: $(item).text().trim(),
       metadata: {
-        website: $(item).attr('href'),
+        website: $(item).attr("href"),
       },
     }));
 
@@ -100,20 +100,20 @@ async function getEventDetails(url) {
 function transform(html) {
   const $ = cheerio.load(html);
 
-  const events = $('.rhpSingleEvent')
+  const events = $(".rhpSingleEvent")
     .toArray()
     .map((item) => {
-      const name = $(item).find('h2').text().trim();
-      const image = $(item).find('.eventListImage').attr('src');
-      const url = $(item).find('.url').attr('href');
-      const date = $(item).find('#eventDate').text().trim();
-      const timeText = $(item).find('.eventDoorStartDate span').text().trim();
+      const name = $(item).find("h2").text().trim();
+      const image = $(item).find(".eventListImage").attr("src");
+      const url = $(item).find(".url").attr("href");
+      const date = $(item).find("#eventDate").text().trim();
+      const timeText = $(item).find(".eventDoorStartDate span").text().trim();
 
       const time = timeText.match(regexTime)[0];
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, 'ddd, MMM DD, YYYY h:mma');
-      const description = $(item).find('.eventDoorStartDate').text().trim();
+      const start_date = moment(dateTime, "ddd, MMM DD, YYYY h:mma");
+      const description = $(item).find(".eventDoorStartDate").text().trim();
 
       const event = {
         name,
@@ -131,10 +131,10 @@ function transform(html) {
 
 async function main() {
   const venue = {
-    venue: 'Hideout Chicago',
-    provider: 'HIDEOUTCHICAGO',
-    city: 'Chicago',
-    url: 'https://hideoutchicago.com/',
+    venue: "Hideout Chicago",
+    provider: "HIDEOUTCHICAGO",
+    city: "Chicago",
+    url: "https://hideoutchicago.com/",
   };
   const location = await getGMapsLocation(venue);
 
@@ -147,9 +147,7 @@ async function main() {
   const preEvents = transform(html);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const {
-      name, image, url, start_date, description,
-    } = preEvent;
+    const { name, image, url, start_date, description } = preEvent;
     const { price, buyUrl, artists } = await getEventDetails(preEvent.url);
 
     await saveEvent({
@@ -168,7 +166,7 @@ async function main() {
     });
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 if (require.main === module) {

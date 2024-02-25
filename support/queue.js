@@ -1,11 +1,11 @@
-const { Queue } = require('bullmq');
+const { Queue } = require("bullmq");
 
-const { getLinks, getProviders } = require('./links.js');
+const { getLinks, getProviders } = require("./links.js");
 
-require('dotenv').config();
+require("dotenv").config();
 
 async function main() {
-  const myQueue = new Queue('livemusic', {
+  const myQueue = new Queue("livemusic", {
     connection: {
       host: process.env.REDIS_HOST,
       port: process.env.REDIS_PORT,
@@ -15,7 +15,7 @@ async function main() {
   const links = getLinks();
 
   const promises = links.map(async (link) => {
-    await myQueue.add('link', link);
+    await myQueue.add("link", link);
   });
 
   await Promise.all(promises);
@@ -30,6 +30,6 @@ async function main() {
 }
 
 main().then(() => {
-  console.log('end');
+  console.log("end");
   process.exit(1);
 });

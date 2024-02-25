@@ -1,11 +1,11 @@
-const async = require('async');
-const path = require('path');
+const async = require("async");
+const path = require("path");
 
-const { getGMapsLocation } = require('./gps');
-const { saveEvent } = require('./mint');
-const { getArtistSingle, mergeArtist } = require('./artist');
+const { getGMapsLocation } = require("./gps");
+const { saveEvent } = require("./mint");
+const { getArtistSingle, mergeArtist } = require("./artist");
 
-const logger = require('./logger')(path.basename(__filename));
+const logger = require("./logger")(path.basename(__filename));
 
 async function getArtistsDetails(event) {
   const response = { artists: [] };
@@ -45,7 +45,7 @@ async function processEventsWithArtist(venue, preEvents) {
     await saveEvent(event);
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 async function processEventsWithArtistDetails(venue, preEvents) {
@@ -80,7 +80,7 @@ async function processEventsWithArtistDetails(venue, preEvents) {
     await saveEvent(event);
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 async function processEventWithArtistDetails(venue, location, preEvent) {
@@ -151,7 +151,7 @@ async function processEventsWithoutArtist(venue, preEvents) {
     await saveEvent(event);
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 module.exports = {

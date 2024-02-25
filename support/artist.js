@@ -1,21 +1,21 @@
-const async = require('async');
+const async = require("async");
 
-const slugify = require('slugify');
+const slugify = require("slugify");
 
-const { getDataFromWebsite, getImageFromURL } = require('./misc');
-const { getMusicbrainz } = require('./musicbrainz');
-const { getArtists } = require('./mint');
-const { getSpotify } = require('./spotify');
-const { metadataProps } = require('./metadata');
+const { getDataFromWebsite, getImageFromURL } = require("./misc");
+const { getMusicbrainz } = require("./musicbrainz");
+const { getArtists } = require("./mint");
+const { getSpotify } = require("./spotify");
+const { metadataProps } = require("./metadata");
 
-const logger = require('./logger')('artist');
+const logger = require("./logger")("artist");
 
 async function getArtistSingle(value) {
   const name = value
     .trim()
-    .replace(/ /g, '+')
-    .replace('and+', '')
-    .replace(/\+/g, ' ');
+    .replace(/ /g, "+")
+    .replace("and+", "")
+    .replace(/\+/g, " ");
   const slug = slugify(name, {
     lower: true,
     strict: true,
@@ -24,13 +24,13 @@ async function getArtistSingle(value) {
   const query = `slug=${slug}`;
   const [artistFound] = await getArtists(query);
 
-  logger.info('internal search', {
+  logger.info("internal search", {
     slug,
     found: !!artistFound,
   });
 
   if (artistFound) {
-    logger.info('found', {
+    logger.info("found", {
       slug,
     });
 
@@ -39,7 +39,7 @@ async function getArtistSingle(value) {
 
   const musicbrainz = await getMusicbrainz(value);
   if (!musicbrainz) {
-    logger.info('NO_PROFILE', {
+    logger.info("NO_PROFILE", {
       artist: value,
     });
     return;
@@ -70,12 +70,12 @@ async function getArtistSingle(value) {
   if (!artist.metadata.image && artist.metadata.soundcloud) {
     artist.metadata.image = await getImageFromURL(
       artist.metadata.soundcloud,
-      'soundcloud',
+      "soundcloud",
     );
   }
 
   if (!artist.metadata.image) {
-    logger.info('no image', { slug });
+    logger.info("no image", { slug });
   }
 
   const spotify = await getSpotify(artist);
@@ -88,9 +88,9 @@ async function getArtistSingle(value) {
 
 async function getArtist(event) {
   const response = [];
-  const artists = event.name.includes(',')
-    ? event.name.split(',')
-    : event.name.split(' and ');
+  const artists = event.name.includes(",")
+    ? event.name.split(",")
+    : event.name.split(" and ");
 
   await async.eachSeries(artists, async (value) => {
     const artist = await getArtistSingle(value);
@@ -127,7 +127,8 @@ function mergeArtist(artistA, artistB) {
   };
 
   metadataProps.forEach((prop) => {
-    artist.metadata[prop] = artistA.metadata?.[prop] || artistB.metadata?.[prop];
+    artist.metadata[prop] =
+      artistA.metadata?.[prop] || artistB.metadata?.[prop];
   });
 
   return artist;

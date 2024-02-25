@@ -1,44 +1,44 @@
-const cheerio = require('cheerio');
-const async = require('async');
-const moment = require('moment');
-const path = require('path');
+const cheerio = require("cheerio");
+const async = require("async");
+const moment = require("moment");
+const path = require("path");
 
-const { getMetadata } = require('../support/metadata');
-const { getGMapsLocation } = require('../support/gps');
-const { getSpotify } = require('../support/spotify');
-const { saveEvent } = require('../support/mint');
-const { getSocial } = require('../support/misc');
-const { extract } = require('../support/extract');
-const { regexTime, regexMoney } = require('../support/misc');
-const { getArtistSingle, mergeArtist } = require('../support/artist');
+const { getMetadata } = require("../support/metadata");
+const { getGMapsLocation } = require("../support/gps");
+const { getSpotify } = require("../support/spotify");
+const { saveEvent } = require("../support/mint");
+const { getSocial } = require("../support/misc");
+const { extract } = require("../support/extract");
+const { regexTime, regexMoney } = require("../support/misc");
+const { getArtistSingle, mergeArtist } = require("../support/artist");
 
-const logger = require('../support/logger')(path.basename(__filename));
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(html, preEvent) {
   const $ = cheerio.load(html);
 
-  const events = $('#middle article.type-show')
+  const events = $("#middle article.type-show")
     .toArray()
     .map((item) => {
-      const name = $(item).find('h2').text().trim();
+      const name = $(item).find("h2").text().trim();
       const image = `${preEvent.url}${$(item)
-        .find('.thumbnail img')
-        .attr('src')}`;
-      const url = $(item).find('.entry-footer a.expandshow').attr('href');
-      const date = $(item).find('.entry-header time').attr('datetime');
-      const timeText = $(item).find('.entry-footer .details li').text().trim();
+        .find(".thumbnail img")
+        .attr("src")}`;
+      const url = $(item).find(".entry-footer a.expandshow").attr("href");
+      const date = $(item).find(".entry-header time").attr("datetime");
+      const timeText = $(item).find(".entry-footer .details li").text().trim();
       const time = timeText.match(regexTime)?.[0];
 
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, 'YYYY-MM-DD h:mma');
-      const description = $(item).find('.details').text().trim();
-      const buyUrl = $(item).find('a.ticketfly').attr('href');
+      const start_date = moment(dateTime, "YYYY-MM-DD h:mma");
+      const description = $(item).find(".details").text().trim();
+      const buyUrl = $(item).find("a.ticketfly").attr("href");
       const price = $(item)
-        .find('.details')
+        .find(".details")
         .text()
         .match(regexMoney)?.[0]
-        ?.replace('$', '');
+        ?.replace("$", "");
 
       const event = {
         name,
@@ -60,23 +60,23 @@ function transformDetails(html) {
   const $ = cheerio.load(html);
   const artists = [];
 
-  $('.entry-content .band')
+  $(".entry-content .band")
     .toArray()
     .map((item) => {
       const social = getSocial($(item).html());
 
       const website = $(item)
-        .find('.details li')
-        .filter((_index, _item) => $(_item).text() === 'Band Website')
-        .find('a')
-        .attr('href');
+        .find(".details li")
+        .filter((_index, _item) => $(_item).text() === "Band Website")
+        .find("a")
+        .attr("href");
 
       if (!Object.keys(social).length) {
         return;
       }
 
       artists.push({
-        name: $(item).find('.show-title').text().trim(),
+        name: $(item).find(".show-title").text().trim(),
         metadata: {
           ...social,
           website,
@@ -131,10 +131,10 @@ async function getDetails(url) {
 
 async function main() {
   const venue = {
-    venue: 'Reggies Chicago',
-    provider: 'REGGIESLIVE',
-    city: 'Chicago',
-    url: 'https://www.reggieslive.com/',
+    venue: "Reggies Chicago",
+    provider: "REGGIESLIVE",
+    city: "Chicago",
+    url: "https://www.reggieslive.com/",
   };
   const location = await getGMapsLocation(venue);
 
@@ -147,9 +147,8 @@ async function main() {
   const preEvents = transform(html, venue);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const {
-      name, image, url, start_date, description, buyUrl, price,
-    } = preEvent;
+    const { name, image, url, start_date, description, buyUrl, price } =
+      preEvent;
     const { artists } = await getDetails(preEvent.url);
 
     const event = {
@@ -170,7 +169,7 @@ async function main() {
     await saveEvent(event);
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 if (require.main === module) {

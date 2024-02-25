@@ -1,46 +1,46 @@
-const async = require('async');
-const cheerio = require('cheerio');
-const moment = require('moment');
-const path = require('path');
+const async = require("async");
+const cheerio = require("cheerio");
+const moment = require("moment");
+const path = require("path");
 
-const { extract } = require('../support/extract');
-const { regexTime, regexMoney, regexEmptySpaces } = require('../support/misc');
-const { processEventWithArtistDetails } = require('../support/preEvents');
-const { getSocial, validURL } = require('../support/misc');
-const { getGMapsLocation } = require('../support/gps');
+const { extract } = require("../support/extract");
+const { regexTime, regexMoney, regexEmptySpaces } = require("../support/misc");
+const { processEventWithArtistDetails } = require("../support/preEvents");
+const { getSocial, validURL } = require("../support/misc");
+const { getGMapsLocation } = require("../support/gps");
 
-const logger = require('../support/logger')(path.basename(__filename));
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(html) {
   const $ = cheerio.load(html);
 
-  const events = $('.eventWrapper')
+  const events = $(".eventWrapper")
     .toArray()
     .map((item) => {
-      const name = $(item).find('h2').text().trim();
+      const name = $(item).find("h2").text().trim();
       const description = $(item)
-        .find('.rhpEventDetails')
+        .find(".rhpEventDetails")
         .text()
         .trim()
-        .replace(regexEmptySpaces, '');
-      const image = $(item).find('.rhp-events-event-image img').attr('src');
-      const url = $(item).find('a.url').attr('href');
-      const href = $(item).find('.rhp-event-cta a').attr('href');
-      const buyUrl = validURL(href) ? validURL : '';
+        .replace(regexEmptySpaces, "");
+      const image = $(item).find(".rhp-events-event-image img").attr("src");
+      const url = $(item).find("a.url").attr("href");
+      const href = $(item).find(".rhp-event-cta a").attr("href");
+      const buyUrl = validURL(href) ? validURL : "";
       const price = $(item)
-        .find('.eventCost span')
+        .find(".eventCost span")
         .text()
         .match(regexMoney)?.[0]
-        ?.replace('$', '');
+        ?.replace("$", "");
 
-      const date = $(item).find('.eventDateListTop').text().trim();
+      const date = $(item).find(".eventDateListTop").text().trim();
       const time = $(item)
-        .find('.eventDoorStartDate')
+        .find(".eventDoorStartDate")
         .text()
         .trim()
         .match(regexTime)?.[0];
 
-      const start_date = moment(`${date} ${time}`, 'ddd, MMM DD h:mma');
+      const start_date = moment(`${date} ${time}`, "ddd, MMM DD h:mma");
 
       const event = {
         name,
@@ -61,17 +61,17 @@ function transform(html) {
 function transformDetails(html) {
   const $ = cheerio.load(html);
   const artists = [];
-  $('.performerAccor')
+  $(".performerAccor")
     .toArray()
     .map((item) => {
-      const social = getSocial($(item).find('.rhpSocialIconsWrapper').html());
+      const social = getSocial($(item).find(".rhpSocialIconsWrapper").html());
 
       if (!Object.keys(social).length) {
         return;
       }
 
-      const name = $(item).find('h5').text().trim();
-      const website = $(item).find('.globe').parent().attr('href');
+      const name = $(item).find("h5").text().trim();
+      const website = $(item).find(".globe").parent().attr("href");
 
       artists.push({
         name,
@@ -102,9 +102,9 @@ async function getDetails(url) {
 async function main() {
   const venue = {
     venue: "Cole's Bar",
-    provider: 'COLESBAR',
-    city: 'Chicago',
-    url: 'https://colesbarchicago.com/',
+    provider: "COLESBAR",
+    city: "Chicago",
+    url: "https://colesbarchicago.com/",
   };
 
   const location = await getGMapsLocation(venue);
@@ -118,9 +118,8 @@ async function main() {
   const preEvents = transform(html, venue);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const {
-      name, description, image, url, buyUrl, price, start_date,
-    } = preEvent;
+    const { name, description, image, url, buyUrl, price, start_date } =
+      preEvent;
     const { artists } = await getDetails(url);
 
     const event = {
@@ -137,7 +136,7 @@ async function main() {
     await processEventWithArtistDetails(venue, location, event);
   });
 
-  logger.info('processed', { total: preEvents.length });
+  logger.info("processed", { total: preEvents.length });
 }
 
 if (require.main === module) {

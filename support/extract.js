@@ -1,7 +1,7 @@
-const logger = require('./logger')('extract');
+const logger = require("./logger")("extract");
 
 async function extract(url, headers) {
-  logger.info('scrapping', { url });
+  logger.info("scrapping", { url });
 
   const response = await fetch(url, headers);
 
@@ -11,7 +11,7 @@ async function extract(url, headers) {
 }
 
 async function extractJSON(url, headers) {
-  logger.info('scrapping', { url });
+  logger.info("scrapping", { url });
 
   const response = await fetch(url, headers);
 
