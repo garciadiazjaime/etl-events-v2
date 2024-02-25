@@ -16,7 +16,7 @@ const queue = new Queue("livemusic", {
 async function extract(url) {
   const response = await fetch(url);
 
-  return await response.text();
+  return response.text();
 }
 
 function transform(html, link) {

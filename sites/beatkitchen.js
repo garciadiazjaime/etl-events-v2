@@ -32,13 +32,14 @@ function transform(html) {
   const events = [];
   $(".seetickets-list-event-container")
     .toArray()
-    .map((item) => {
+    .forEach((item) => {
       // todo: this is almost the same ETL as `subt` except for this check
       if (
         !$(item).find(".venue").text().trim().toLowerCase().includes("beat")
       ) {
         return;
       }
+
       const name = $(item).find(".event-title").text().trim();
       const url = $(item).find(".event-title a").attr("href");
       const image = $(item).find("img").attr("src");
@@ -52,7 +53,7 @@ function transform(html) {
 
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, "ddd MMM D h:mma");
+      const startDate = moment(dateTime, "ddd MMM D h:mma");
       const description = $(item).find(".doortime-showtime").text().trim();
       const buyUrl = $(item).find("a.seetickets-buy-btn").attr("href");
 
@@ -62,7 +63,7 @@ function transform(html) {
         name,
         image,
         url,
-        start_date,
+        start_date: startDate,
         description,
         buyUrl,
         artists,

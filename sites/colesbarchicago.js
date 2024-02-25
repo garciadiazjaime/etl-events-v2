@@ -40,7 +40,7 @@ function transform(html) {
         .trim()
         .match(regexTime)?.[0];
 
-      const start_date = moment(`${date} ${time}`, "ddd, MMM DD h:mma");
+      const startDate = moment(`${date} ${time}`, "ddd, MMM DD h:mma");
 
       const event = {
         name,
@@ -49,7 +49,7 @@ function transform(html) {
         url,
         buyUrl,
         price,
-        start_date,
+        start_date: startDate,
       };
 
       return event;
@@ -63,7 +63,7 @@ function transformDetails(html) {
   const artists = [];
   $(".performerAccor")
     .toArray()
-    .map((item) => {
+    .forEach((item) => {
       const social = getSocial($(item).find(".rhpSocialIconsWrapper").html());
 
       if (!Object.keys(social).length) {
@@ -89,7 +89,7 @@ function transformDetails(html) {
 
 async function getDetails(url) {
   if (!url) {
-    return;
+    return {};
   }
 
   const html = await extract(url);
@@ -118,18 +118,10 @@ async function main() {
   const preEvents = transform(html, venue);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const { name, description, image, url, buyUrl, price, start_date } =
-      preEvent;
-    const { artists } = await getDetails(url);
+    const { artists } = await getDetails(preEvent.url);
 
     const event = {
-      name,
-      description,
-      image,
-      url,
-      buyUrl,
-      price,
-      start_date,
+      ...preEvent,
       artists,
     };
 

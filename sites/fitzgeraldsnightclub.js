@@ -30,7 +30,7 @@ function transform(html, preEvent) {
 
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, "ddd MMM D h:mm a");
+      const startDate = moment(dateTime, "ddd MMM D h:mm a");
       const description = $(item).find(".tw-price").text().trim();
       const buyUrl = $(item).find("a.tw-buy-tix-btn").attr("href");
       const price = $(item)
@@ -46,7 +46,7 @@ function transform(html, preEvent) {
         name,
         image,
         url,
-        start_date,
+        start_date: startDate,
         description,
         provider,
         venue,
@@ -82,7 +82,7 @@ function transformDetails(html) {
 
 async function getDetails(url) {
   if (!url) {
-    return;
+    return {};
   }
 
   const html = await extract(url);

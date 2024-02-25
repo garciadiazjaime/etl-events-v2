@@ -8,10 +8,10 @@ const { processEventsWithArtist } = require("../support/preEvents");
 function getArtist($) {
   const mainArtist = $.find("h3").text().split("|");
 
-  const _extraArtist = $.find("h4").text() || "";
-  const extraArtist = _extraArtist.includes("-")
-    ? _extraArtist.split("-")
-    : _extraArtist.split(",");
+  const preExtraArtist = $.find("h4").text() || "";
+  const extraArtist = preExtraArtist.includes("-")
+    ? preExtraArtist.split("-")
+    : preExtraArtist.split(",");
 
   const invalidNames = ["SUNDOWN SUNDAZE", "INDUSTRY MONDAYS"];
 
@@ -37,7 +37,7 @@ function getArtist($) {
     }));
 }
 
-function transform(html, venue) {
+function transform(html) {
   const $ = cheerio.load(html);
 
   const events = $("#eventsList .entry")
@@ -45,7 +45,7 @@ function transform(html, venue) {
     .map((item) => {
       const name = $(item).find("h3").text().trim();
       const description = removeEmptySpaces(
-        $(item).find(".time").text().trim(),
+        $(item).find(".time").text().trim()
       );
       const image = $(item).find(".thumb img").attr("src");
       const url = $(item).find(".thumb a").attr("href");
@@ -55,7 +55,7 @@ function transform(html, venue) {
       const date = $(item).find(".date").text().trim();
       const time = getTime($(item).find(".time").text());
       const dateTime = `${date} ${time}`;
-      const start_date = moment(dateTime, "ddd, MMM DD, YYYY h:mma");
+      const startDate = moment(dateTime, "ddd, MMM DD, YYYY h:mma");
 
       const artists = getArtist($(item));
 
@@ -66,7 +66,7 @@ function transform(html, venue) {
         url,
         buyUrl,
         price,
-        start_date,
+        start_date: startDate,
         artists,
       };
     });

@@ -28,7 +28,7 @@ async function updateEvent(eventPk, payload) {
       payload,
       data,
     });
-    return;
+    return null;
   }
 
   logger.info("event updated", { pk: data.pk });
@@ -51,7 +51,7 @@ async function saveLocation(payload) {
       payload,
       data,
     });
-    return;
+    return null;
   }
 
   logger.info("location saved", { slug: data.slug });
@@ -83,7 +83,7 @@ async function updateLocation(pk, payload) {
       payload,
       data,
     });
-    return;
+    return null;
   }
 
   logger.info("location updated", { pk: data.pk });
@@ -106,7 +106,7 @@ async function saveMetadata(payload) {
       payload,
       data,
     });
-    return;
+    return null;
   }
 
   logger.info("metadata saved", {
@@ -155,7 +155,7 @@ async function updateSpotify(payload, pk) {
       payload,
       data,
     });
-    return;
+    return null;
   }
 
   logger.info("spotify updated", { pk: data.pk });
@@ -182,13 +182,13 @@ async function saveEvent(payload) {
 
   const data = await response.json();
   if (response.status > 201) {
-    console.log(JSON.stringify(payload, null, 2));
+    logger.info("payload", JSON.stringify(payload, null, 2));
 
     logger.error("Error saving processed event", {
       data: JSON.stringify(data),
     });
 
-    return;
+    return null;
   }
 
   logger.info("processed event saved", {

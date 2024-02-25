@@ -21,7 +21,7 @@ function transform(html, venue) {
       const venueName = $(item).find(".tessera-venue").text().trim();
 
       if (venueName?.toLocaleLowerCase().includes(venue.exclude)) {
-        return;
+        return null;
       }
 
       const name = $(item).find(".card-title").text().trim();
@@ -37,7 +37,7 @@ function transform(html, venue) {
 
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, "MMM DD h:mma");
+      const startDate = moment(dateTime, "MMM DD h:mma");
       const description = $(item)
         .find(".show-details")
         .text()
@@ -49,7 +49,7 @@ function transform(html, venue) {
         name,
         image,
         url,
-        start_date,
+        start_date: startDate,
         description,
       };
 
@@ -95,7 +95,7 @@ function transformDetails(html) {
       }
 
       const [prop, network] = Object.entries(socialNetwork)[0];
-      artist.metadata[prop] = network;
+      artist.metadata[prop] = network; // eslint-disable-line
     });
   } else {
     // todo: when number does not match, maybe at least one value can be use
@@ -111,7 +111,7 @@ function transformDetails(html) {
 
 async function getDetails(url) {
   if (!url) {
-    return;
+    return {};
   }
 
   const html = await extract(url);
@@ -194,15 +194,10 @@ async function main() {
     const preEvents = transform(html, venue);
 
     await async.eachSeries(preEvents, async (preEvent) => {
-      const { name, image, url, start_date, description } = preEvent;
       const { artists } = await getDetails(preEvent.url);
 
       const event = {
-        name,
-        image,
-        url,
-        start_date,
-        description,
+        ...preEvent,
         artists,
         location,
         provider: venue.provider,

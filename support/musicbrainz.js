@@ -11,7 +11,7 @@ function isMatch(artistName, artistResult) {
 
   const result = compareTwoStrings(
     artistName.toLowerCase(),
-    artistResult.toLowerCase(),
+    artistResult.toLowerCase()
   );
 
   return result >= 0.5;
@@ -33,13 +33,13 @@ async function getProfileFromMusicbrainz(artistName) {
 
   if (!anchor.length) {
     logger.info("no artist results", { name });
-    return;
+    return null;
   }
 
   const artistResult = anchor.text();
   if (!isMatch(artistName, artistResult)) {
     logger.info("NO_MATCH", { artist: artistName, result: artistResult });
-    return;
+    return null;
   }
 
   return `${domain}${anchor.attr("href")}`;
@@ -81,7 +81,7 @@ async function getSocialFromProfile(profile) {
 
       return accumulator;
     },
-    { genres, metadata: {} },
+    { genres, metadata: {} }
   );
 }
 
@@ -90,7 +90,7 @@ async function getMusicbrainz(name) {
 
   if (!validURL(profile)) {
     logger.info("invalid profile", { name, profile });
-    return;
+    return null;
   }
 
   const social = await getSocialFromProfile(profile);

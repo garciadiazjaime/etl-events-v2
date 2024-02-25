@@ -15,7 +15,7 @@ function transform(html, preEvent) {
         $(item)
           .text()
           .replace(/(<([^>]+)>)/gi, "")
-          .replace(/(\r\n|\n|\r)/gm, ""),
+          .replace(/(\r\n|\n|\r)/gm, "")
       );
 
       const descriptionContent = data.description
@@ -27,13 +27,13 @@ function transform(html, preEvent) {
 
       const time = description.match(regexTime)?.[0];
       const dateTime = `${data.startDate} ${time}`;
-      const start_date = moment(dateTime, "YYYY-MM-DD h:mma");
+      const startDate = moment(dateTime, "YYYY-MM-DD h:mma");
 
       const event = {
         name: data.name,
         image: data.image,
         url: data.url,
-        start_date,
+        start_date: startDate,
         description,
         price: data.offers?.price,
         provider: preEvent.provider,

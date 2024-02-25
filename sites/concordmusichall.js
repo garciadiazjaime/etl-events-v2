@@ -23,7 +23,7 @@ function transform(html) {
       const time = $(item).find(".doors").text().trim().match(regexTime)?.[0];
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, "MMM D h:mm a");
+      const startDate = moment(dateTime, "MMM D h:mm a");
       const description = `${$(item).find(".age").text().trim()}, ${$(item)
         .find(".doors")
         .text()
@@ -35,7 +35,7 @@ function transform(html) {
         name,
         image,
         url,
-        start_date,
+        start_date: startDate,
         description,
         price,
       };

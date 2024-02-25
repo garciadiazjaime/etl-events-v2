@@ -1,14 +1,14 @@
 const { Worker } = require("bullmq");
-const async = require("async");
+const path = require("path");
 
 const { processLink } = require("./events");
 const { getGMapsLocation } = require("./gps");
 const { getMetadata } = require("./metadata");
 const { getArtist } = require("./artist");
-const { getSpotify } = require("./spotify");
 const { saveEvent } = require("./mint");
 const etl = require("../sites/andysjazzclub");
-const logger = require("./logger")("queue");
+
+const logger = require("./logger")(path.basename(__filename));
 
 require("dotenv").config();
 
@@ -18,7 +18,7 @@ async function main() {
   const worker = new Worker(
     "livemusic",
     async (job) => {
-      console.log("__job__", job.name, job.data);
+      logger.info("__job__", { name: job.name, data: job.data });
       if (job.name === "link") {
         await processLink([job.data]);
         return;
@@ -55,7 +55,6 @@ async function main() {
           event.artists = artists;
         }
 
-        console.log(JSON.stringify(event, null, 2));
         await saveEvent(event);
       }
 
@@ -68,7 +67,7 @@ async function main() {
         host: process.env.REDIS_HOST,
         port: process.env.REDIS_PORT,
       },
-    },
+    }
   );
 
   worker.on("completed", ({ name, data }) => {
@@ -81,5 +80,5 @@ async function main() {
 }
 
 main().then(() => {
-  console.log("queue started");
+  logger.info("queue started");
 });

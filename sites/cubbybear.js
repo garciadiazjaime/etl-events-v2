@@ -13,8 +13,7 @@ function transform(html, venue) {
       const name = $(item).find(".eventlist-title").first().text().trim();
       const description = undefined;
       const image = $(item).find("img").data("src");
-      const _url = new URL(venue.url);
-      const url = `${_url.origin}${$(item)
+      const url = `${new URL(venue.url).origin}${$(item)
         .find(".eventlist-title a")
         .attr("href")}`;
       const buyUrl = undefined;
@@ -23,7 +22,7 @@ function transform(html, venue) {
       const date = $(item).find(".event-date").attr("datetime");
       const time = $(item).find(".event-time-12hr-start").text().trim();
       const dateTime = `${date} ${time}`;
-      const start_date = moment(dateTime, "YYYY-MM-DD h:mma");
+      const startDate = moment(dateTime, "YYYY-MM-DD h:mma");
 
       const artists = undefined;
 
@@ -34,7 +33,7 @@ function transform(html, venue) {
         url,
         buyUrl,
         price,
-        start_date,
+        start_date: startDate,
         artists,
       };
     });

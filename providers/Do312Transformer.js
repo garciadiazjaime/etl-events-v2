@@ -9,7 +9,7 @@ function getOriginFromUrl(url) {
 function Do312Pages(html, originalLink) {
   const $ = cheerio.load(html);
   const nextPageLink = `${getOriginFromUrl(originalLink.url)}${$(
-    ".ds-next-page",
+    ".ds-next-page"
   ).attr("href")}`;
 
   return [
@@ -36,13 +36,13 @@ function Do312Transformer(html, link) {
       const timestamp = $(item)
         .find(".ds-listing-details > meta")
         .attr("datetime");
-      const start_date = moment(timestamp).format();
+      const startDate = moment(timestamp).format();
 
       return {
         name,
         image,
         url,
-        start_date,
+        start_date: startDate,
         venue,
         city: link.city,
         provider: link.provider,

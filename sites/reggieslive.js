@@ -31,7 +31,7 @@ function transform(html, preEvent) {
 
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, "YYYY-MM-DD h:mma");
+      const startDate = moment(dateTime, "YYYY-MM-DD h:mma");
       const description = $(item).find(".details").text().trim();
       const buyUrl = $(item).find("a.ticketfly").attr("href");
       const price = $(item)
@@ -44,7 +44,7 @@ function transform(html, preEvent) {
         name,
         image,
         url,
-        start_date,
+        start_date: startDate,
         description,
         buyUrl,
         price,
@@ -62,7 +62,7 @@ function transformDetails(html) {
 
   $(".entry-content .band")
     .toArray()
-    .map((item) => {
+    .forEach((item) => {
       const social = getSocial($(item).html());
 
       const website = $(item)
@@ -91,7 +91,7 @@ function transformDetails(html) {
 
 async function getDetails(url) {
   if (!url) {
-    return;
+    return {};
   }
 
   const response = { artists: [] };
@@ -111,7 +111,7 @@ async function getDetails(url) {
         metadata,
         spotify,
       },
-      preArtist,
+      preArtist
     );
 
     if (!Object.keys(newArtist.metadata).length && artistSingle) {
@@ -147,18 +147,10 @@ async function main() {
   const preEvents = transform(html, venue);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const { name, image, url, start_date, description, buyUrl, price } =
-      preEvent;
     const { artists } = await getDetails(preEvent.url);
 
     const event = {
-      name,
-      image,
-      url,
-      start_date,
-      description,
-      buyUrl,
-      price,
+      ...preEvent,
       artists,
       location,
       provider: venue.provider,

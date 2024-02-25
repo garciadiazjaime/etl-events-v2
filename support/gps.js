@@ -9,19 +9,19 @@ const { getMetadata } = require("./metadata");
 
 const logger = require("./logger")(path.basename(__filename));
 
-async function getLocationFromDB(slug_venue) {
-  const query = `slug_venue=${slug_venue}`;
+async function getLocationFromDB(slugVenue) {
+  const query = `slug_venue=${slugVenue}`;
   const [location] = await getLocations(query);
 
   logger.info("internal location search", {
-    slug_venue,
+    slugVenue,
     location: !!location,
   });
 
   return location;
 }
 
-async function getLocationFromGMaps(event, slug_venue) {
+async function getLocationFromGMaps(event, slugVenue) {
   const chalk = (await import("chalk").then((mod) => mod)).default;
 
   const params = {
@@ -48,14 +48,18 @@ async function getLocationFromGMaps(event, slug_venue) {
       venue: event.venue,
     });
 
-    return;
+    return null;
   }
 
-  const { formatted_address, geometry, name, place_id } =
-    gmapsResponse.data.candidates[0];
+  const {
+    formatted_address: address,
+    geometry,
+    name,
+    place_id: placeId,
+  } = gmapsResponse.data.candidates[0];
 
   const paramsDetails = {
-    place_id,
+    place_id: placeId,
     key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     fields: ["website", "url"],
   };
@@ -68,11 +72,11 @@ async function getLocationFromGMaps(event, slug_venue) {
 
   const payload = {
     name,
-    address: formatted_address,
+    address,
     lat: geometry.location.lat.toFixed(6),
     lng: geometry.location.lng.toFixed(6),
-    place_id,
-    slug_venue: [{ name: slug_venue }],
+    place_id: placeId,
+    slug_venue: [{ name: slugVenue }],
     website,
     url,
   };
@@ -85,23 +89,23 @@ async function getGMapsLocation(venue, checkWebsite = true) {
     venue: venue.venue,
   });
 
-  const slug_venue = slugify(venue.venue, { lower: true, strict: true });
-  const locationFromDB = await getLocationFromDB(slug_venue);
+  const slugVenue = slugify(venue.venue, { lower: true, strict: true });
+  const locationFromDB = await getLocationFromDB(slugVenue);
 
   if (locationFromDB) {
     logger.info("location found", {
-      slug_venue,
+      slugVenue,
       website: locationFromDB.website,
     });
 
     return locationFromDB;
   }
 
-  const location = await getLocationFromGMaps(venue, slug_venue);
+  const location = await getLocationFromGMaps(venue, slugVenue);
 
   if (!location) {
     logger.error("NO_LOCATION", venue);
-    return;
+    return null;
   }
 
   if (!location.metadata) {

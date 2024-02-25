@@ -39,7 +39,7 @@ function transformDetails(html) {
 
   $("#performers .persons__item")
     .toArray()
-    .map((item) => {
+    .forEach((item) => {
       const name = $(item).find(".persons__name").text().trim();
 
       if (name) {
@@ -97,7 +97,7 @@ async function main() {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
-    },
+    }
   );
   const preEvents = transform(data, venue);
 

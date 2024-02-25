@@ -40,8 +40,6 @@ async function processEventsWithArtist(venue, preEvents) {
       city: venue.city,
     };
 
-    console.log(JSON.stringify(event, null, 2));
-
     await saveEvent(event);
   });
 
@@ -75,8 +73,6 @@ async function processEventsWithArtistDetails(venue, preEvents) {
       city: venue.city,
     };
 
-    console.log(JSON.stringify(event, null, 2));
-
     await saveEvent(event);
   });
 
@@ -108,8 +104,6 @@ async function processEventWithArtistDetails(venue, location, preEvent) {
     city: venue.city,
   };
 
-  console.log(JSON.stringify(event, null, 2));
-
   await saveEvent(event);
 }
 
@@ -124,8 +118,6 @@ async function processEventWithArtist(venue, location, preEvent) {
     venue: venue.venue,
     city: venue.city,
   };
-
-  // console.log(JSON.stringify(event, null, 2));
 
   await saveEvent(event);
 }
@@ -145,8 +137,6 @@ async function processEventsWithoutArtist(venue, preEvents) {
       venue: venue.venue,
       city: venue.city,
     };
-
-    console.log(JSON.stringify(event, null, 2));
 
     await saveEvent(event);
   });

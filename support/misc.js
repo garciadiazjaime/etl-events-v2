@@ -7,7 +7,9 @@ const sleep = async (ms = 1_000) => {
     seconds: ms / 1000,
   });
 
-  await new Promise((resolve) => setTimeout(resolve, ms));
+  await new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 };
 
 const regexTime =
@@ -18,17 +20,17 @@ const regexEmptySpaces = /(\r\n|\n|\r|\t)/g;
 const snakeCase = (value) => value.trim().replace(/ /g, "_");
 
 const urlValidRegex =
-  /https?:\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,})(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?/gi;
+  /https?:\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,})(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(#[-a-z\d_]*)?/gi;
 const twitterRegex = /http(?:s)?:\/\/(?:www\.)?twitter\.com\/([a-zA-Z0-9_]+)/gi;
 const facebookRegex =
-  /http(?:s)?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9_\.]+)/gi;
+  /http(?:s)?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9_.]+)/gi;
 const youtubeSimpleRegex =
   /http(?:s)?:\/\/(?:www\.)?youtube\.com\/([@a-zA-Z0-9_]+)/;
 const youtubeWatchRegex = /https?:\/\/(?:www\.)?youtube\.com\/watch\?[^"]+/;
 const youtubeRegex =
-  /https?:\/\/(?:www\.)?youtube\.com\/(?:embed\/|channel\/|user\/|watch\?v=|[^\/]+)([a-zA-Z0-9_-]+)/;
+  /https?:\/\/(?:www\.)?youtube\.com\/(?:embed\/|channel\/|user\/|watch\?v=|[^/]+)([a-zA-Z0-9_-]+)/;
 const instagramRegex =
-  /http(?:s)?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_\.]+)/gi;
+  /http(?:s)?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_.]+)/gi;
 const tiktokRegex = /http(?:s)?:\/\/(?:www\.)?tiktok\.com\/([a-zA-Z0-9_]+)/gi;
 const soundcloudRegex =
   /http(?:s)?:\/\/(?:www\.)?soundcloud\.com\/([a-zA-Z0-9_-]+)/gi;
@@ -70,7 +72,7 @@ const getTwitter = (value) => {
     ?.filter((item) => !item.includes("twitter.com/intent"))[0];
 
   if (["http://www.twitter.com/wix"].includes(twitter)) {
-    return;
+    return null;
   }
 
   return twitter;
@@ -89,7 +91,7 @@ const getFacebook = (value) => {
       "http://www.facebook.com/2008",
     ].find((item) => item === facebook)
   ) {
-    return;
+    return null;
   }
 
   return facebook;
@@ -116,7 +118,7 @@ const getYoutube = (_value) => {
       youtube = value.match(youtubeRegex)?.[0];
 
       if (!isYoutubeValid(youtube)) {
-        return;
+        return null;
       }
     }
   }
@@ -137,7 +139,7 @@ const getBandCamp = (value) => {
     value.match(bandCampRegex)?.[0] || value.match(bandCampSimpleRegex)?.[0];
 
   if (bandCamp?.includes("jeffscottcastle")) {
-    return;
+    return null;
   }
 
   return bandCamp;
@@ -169,8 +171,8 @@ const getSocial = (html, website) => {
   const soundcloud = getSoundcloud(html);
   const spotify = getSpotify(html);
   const appleMusic = getAppleMusic(html);
-  const band_camp = getBandCamp(html);
-  const link_tree = getLinkTree(html);
+  const bandCamp = getBandCamp(html);
+  const linkTree = getLinkTree(html);
 
   if (
     !image &&
@@ -182,8 +184,8 @@ const getSocial = (html, website) => {
     !soundcloud &&
     !spotify &&
     !appleMusic &&
-    !band_camp &&
-    !link_tree
+    !bandCamp &&
+    !linkTree
   ) {
     return {};
   }
@@ -199,8 +201,8 @@ const getSocial = (html, website) => {
     soundcloud,
     spotify,
     appleMusic,
-    band_camp,
-    link_tree,
+    band_camp: bandCamp,
+    link_tree: linkTree,
   };
 };
 
@@ -225,7 +227,7 @@ async function getImageFromURL(url, social) {
   if (!response) {
     logger.info(`${social} error`, { url });
 
-    return;
+    return null;
   }
 
   const html = await response.text();
@@ -239,7 +241,7 @@ async function getDataFromWebsite(url) {
   if (!url) {
     logger.info("no website");
 
-    return;
+    return null;
   }
 
   const response = await fetch(url).catch(() => false);
@@ -247,7 +249,7 @@ async function getDataFromWebsite(url) {
   if (!response) {
     logger.info("website error", { url });
 
-    return;
+    return null;
   }
 
   const html = await response.text();
@@ -268,7 +270,7 @@ const getGenres = (html) => {
 
 const getSocialNetworkFrom = (url) => {
   if (!url) {
-    return;
+    return null;
   }
 
   const socialNetworks = [

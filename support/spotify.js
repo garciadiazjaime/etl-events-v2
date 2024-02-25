@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const logger = require("./logger")("spotify");
 
+// todo: improve how token is generated
 const getToken = async () => {
   const url = "https://accounts.spotify.com/api/token";
 
@@ -12,11 +13,11 @@ const getToken = async () => {
   };
 
   let formBody = [];
-  for (const property in details) {
+  Object.keys(details).forEach((property) => {
     const encodedKey = encodeURIComponent(property);
     const encodedValue = encodeURIComponent(details[property]);
     formBody.push(`${encodedKey}=${encodedValue}`);
-  }
+  });
   formBody = formBody.join("&");
 
   const response = await fetch(url, {
@@ -30,7 +31,7 @@ const getToken = async () => {
   const data = await response.json();
   if (response.status > 200) {
     logger.info("token response", data);
-    return;
+    return null;
   }
   // console.log('spotify-token', data.access_token);
   return data.access_token;
@@ -51,7 +52,7 @@ const getArtistDetails = async (token, id) => {
       id,
       data,
     });
-    return;
+    return null;
   }
 
   return data;
@@ -62,14 +63,14 @@ async function getSpotify(artist) {
     logger.info("NO_SPOTIFY", {
       name: artist.name,
     });
-    return;
+    return null;
   }
 
   if (artist.metadata.spotify.includes("user/")) {
     logger.info("USER_NO_ARTISTS", {
       name: artist.name,
     });
-    return;
+    return null;
   }
 
   logger.info("artist", {
@@ -83,7 +84,7 @@ async function getSpotify(artist) {
 
   if (!details) {
     logger.info("INVALID_ARTIST", { id });
-    return;
+    return null;
   }
 
   const payload = {

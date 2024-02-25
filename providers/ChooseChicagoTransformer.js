@@ -15,18 +15,18 @@ function ChooseChicagoTransformer(html, link) {
       const date = $(item).find(".tribe-event-date-start").text();
       const startTime = $(item).find(".tribe-event-time").first().text();
       const endTime = $(item).find(".tribe-event-time").last().text();
-      const start_date =
+      const startDate =
         moment(`${date} ${startTime}`, "dddd, MMMM Do LT").format() !==
         "Invalid date"
           ? moment(`${date} ${startTime}`, "dddd, MMMM Do LT")
           : moment(`${date} ${startTime}`, "dddd MMMM Do, YYYY LT");
-      const end_date =
+      const endDate =
         moment(`${date} ${endTime}`, "dddd, MMMM Do LT").format() !==
         "Invalid date"
           ? moment(`${date} ${endTime}`, "dddd, MMMM Do LT")
           : moment(`${date} ${endTime}`, "dddd MMMM Do, YYYY LT");
-      if (end_date < start_date) {
-        end_date.add(1, "days");
+      if (endDate < startDate) {
+        endDate.add(1, "days");
       }
       const venue = $(item)
         .find(".tribe-events-venue-details b")
@@ -40,8 +40,8 @@ function ChooseChicagoTransformer(html, link) {
         description,
         image,
         url,
-        start_date: start_date.format(),
-        end_date: end_date.format(),
+        start_date: startDate.format(),
+        end_date: endDate.format(),
         venue,
         address: address.text(),
         city: link.city,

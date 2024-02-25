@@ -32,7 +32,7 @@ function transform(html, venue) {
       const price = getPrice($(item).find(".show-details-p").text().trim());
 
       const dateTime = $(item).find(".featured-box-details").text().trim();
-      const start_date = moment(dateTime, "MMMM DD | h:mma");
+      const startDate = moment(dateTime, "MMMM DD | h:mma");
 
       const mainArtist = getArtist(name);
 
@@ -41,7 +41,7 @@ function transform(html, venue) {
         description,
         image,
         url,
-        start_date,
+        start_date: startDate,
         buyUrl,
         price,
         artists: [mainArtist],

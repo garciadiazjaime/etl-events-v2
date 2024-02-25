@@ -1,8 +1,18 @@
 const { Queue } = require("bullmq");
 
-const { getLinks, getProviders } = require("./links.js");
+const { getLinks, getProviders } = require("./links");
 
 require("dotenv").config();
+
+async function queueSites(myQueue) {
+  const providers = getProviders();
+
+  const promises = providers.map(async (provider) => {
+    await myQueue.add("provider", provider);
+  });
+
+  await Promise.all(promises);
+}
 
 async function main() {
   const myQueue = new Queue("livemusic", {
@@ -20,16 +30,12 @@ async function main() {
 
   await Promise.all(promises);
 
-  // const providers = getProviders();
-
-  // const promises = providers.map(async (provider) => {
-  //   await myQueue.add('provider', provider);
-  // });
-
-  // await Promise.all(promises);
+  const flag = false;
+  if (flag) {
+    await queueSites(myQueue);
+  }
 }
 
 main().then(() => {
-  console.log("end");
   process.exit(1);
 });

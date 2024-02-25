@@ -9,7 +9,7 @@ function transform(data, preEvent) {
     start_date: event.date,
     description: event.description,
     buyUrl: event.url,
-    price: event.ticket_types?.[0].price.total / 100 || "",
+    price: (event.ticket_types?.[0].price.total || 0) / 100 || "",
     artists: event.artists?.map((artistName) => ({
       name: artistName,
     })),
@@ -36,7 +36,7 @@ async function main() {
       headers: {
         "X-Api-Key": "8JMzxF43og372h6gQI9Bg3SO8ehBJnDa3ACPE3Gp",
       },
-    },
+    }
   );
 
   const preEvents = transform(data, venue);

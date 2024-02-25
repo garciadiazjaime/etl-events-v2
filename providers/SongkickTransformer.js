@@ -41,13 +41,13 @@ function SongkickTransformer(html, link) {
         .attr("href")}`;
       const venue = $(item).find(".venue-link").text();
       const timestamp = $(item).find("time").attr("datetime");
-      const start_date = moment(timestamp).format();
+      const startDate = moment(timestamp).format();
 
       return {
         name,
         image,
         url,
-        start_date,
+        start_date: startDate,
         venue,
         city: link.city,
         provider: link.provider,

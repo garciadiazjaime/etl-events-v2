@@ -13,9 +13,9 @@ function transform(html, venue) {
     .map((item) => {
       const name = $(item).find("h3").text().trim();
       const description = $(item).find(".secondary-item p").text().trim();
-      const _url = new URL(venue.url);
-      const image = `${_url.origin}${$(item).find("img").attr("src")}`;
-      const url = `${_url.origin}${$(item).find("a").first().attr("href")}`;
+      const preUrl = new URL(venue.url);
+      const image = `${preUrl.origin}${$(item).find("img").attr("src")}`;
+      const url = `${preUrl.origin}${$(item).find("a").first().attr("href")}`;
       const buyUrl = undefined;
       const price = undefined;
 
@@ -23,7 +23,7 @@ function transform(html, venue) {
       const time = getTime(description);
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, "MMMDD h:mma");
+      const startDate = moment(dateTime, "MMMDD h:mma");
 
       const artists = undefined;
 
@@ -34,7 +34,7 @@ function transform(html, venue) {
         url,
         buyUrl,
         price,
-        start_date,
+        start_date: startDate,
         artists,
       };
     });

@@ -6,13 +6,13 @@ const { removeHTML, getPrice } = require("../support/misc");
 
 function transform(data) {
   const events = data.map((event) => {
-    const start_date = moment(removeHTML(event.dateTime), "ddd, MMM DD h:mma");
+    const startDate = moment(removeHTML(event.dateTime), "ddd, MMM DD h:mma");
 
     return {
       name: event.title,
       image: event.image,
       url: event.permalink,
-      start_date,
+      start_date: startDate,
       description: removeHTML(event.description),
       buyUrl: event.ticket?.link,
       price: getPrice(event.fromPrice),
@@ -35,7 +35,7 @@ async function main() {
 
   // todo: dice seems like a good reference for live music events
   const data = await extractJSON(
-    "https://sleeping-village.com/api/plot/v1/listings?currentpage=1&notLoaded=false&listingsPerPage=48&_locale=user",
+    "https://sleeping-village.com/api/plot/v1/listings?currentpage=1&notLoaded=false&listingsPerPage=48&_locale=user"
   );
 
   const preEvents = transform(data, venue);

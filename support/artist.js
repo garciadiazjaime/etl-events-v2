@@ -42,7 +42,7 @@ async function getArtistSingle(value) {
     logger.info("NO_PROFILE", {
       artist: value,
     });
-    return;
+    return null;
   }
 
   const website = await getDataFromWebsite(musicbrainz.metadata.website);
@@ -70,7 +70,7 @@ async function getArtistSingle(value) {
   if (!artist.metadata.image && artist.metadata.soundcloud) {
     artist.metadata.image = await getImageFromURL(
       artist.metadata.soundcloud,
-      "soundcloud",
+      "soundcloud"
     );
   }
 
@@ -94,11 +94,9 @@ async function getArtist(event) {
 
   await async.eachSeries(artists, async (value) => {
     const artist = await getArtistSingle(value);
-    if (!artist) {
-      return;
+    if (artist) {
+      response.push(artist);
     }
-
-    response.push(artist);
   });
 
   return response;
@@ -106,7 +104,7 @@ async function getArtist(event) {
 
 function mergeArtist(artistA, artistB) {
   if (!artistA && !artistB) {
-    return;
+    return null;
   }
 
   if (!artistA) {

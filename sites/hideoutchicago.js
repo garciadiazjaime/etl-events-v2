@@ -37,7 +37,7 @@ function transformEventDetails(html) {
 
 async function getEventDetails(url) {
   if (!url) {
-    return;
+    return {};
   }
 
   const html = await extract(url);
@@ -112,14 +112,14 @@ function transform(html) {
       const time = timeText.match(regexTime)[0];
       const dateTime = `${date} ${time}`;
 
-      const start_date = moment(dateTime, "ddd, MMM DD, YYYY h:mma");
+      const startDate = moment(dateTime, "ddd, MMM DD, YYYY h:mma");
       const description = $(item).find(".eventDoorStartDate").text().trim();
 
       const event = {
         name,
         image,
         url,
-        start_date,
+        start_date: startDate,
         description,
       };
 
@@ -139,7 +139,7 @@ async function main() {
   const location = await getGMapsLocation(venue);
 
   if (!location) {
-    return location;
+    return;
   }
 
   const html = await extract(venue.url);
@@ -147,15 +147,10 @@ async function main() {
   const preEvents = transform(html);
 
   await async.eachSeries(preEvents, async (preEvent) => {
-    const { name, image, url, start_date, description } = preEvent;
     const { price, buyUrl, artists } = await getEventDetails(preEvent.url);
 
     await saveEvent({
-      name,
-      image,
-      url,
-      start_date,
-      description,
+      ...preEvent,
       price,
       buyUrl,
       artists,
