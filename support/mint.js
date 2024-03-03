@@ -12,6 +12,14 @@ async function getEvents(query) {
   return data.results;
 }
 
+async function getEvent(id) {
+  const response = await fetch(`${EVENTS_API}/${id}`);
+
+  const data = await response.json();
+
+  return data;
+}
+
 async function getLocations(query) {
   const response = await fetch(`${EVENTS_API}/locations/?${query}`);
 
@@ -64,6 +72,7 @@ async function saveEvent(payload) {
 module.exports = {
   saveEvent,
   getEvents,
+  getEvent,
   getLocations,
   getArtists,
 };

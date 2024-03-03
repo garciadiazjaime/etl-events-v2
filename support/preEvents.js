@@ -92,9 +92,7 @@ async function processEventWithArtistDetails(venue, location, preEvent) {
   await async.eachSeries(preEvent.artists, async (preArtist) => {
     const artistSingle = await getArtistSingle(preArtist.name);
     if (!artistSingle) {
-      if (Object.keys(preArtist.metadata || {}).length) {
-        artists.push(preArtist);
-      }
+      logger.info("ERROR_ARTIST_UNKNOWN", preArtist);
       return;
     }
 
@@ -110,9 +108,8 @@ async function processEventWithArtistDetails(venue, location, preEvent) {
     venue: venue.venue,
     city: venue.city,
   };
-  console.log(event);
 
-  // await saveEvent(event);
+  await saveEvent(event);
 }
 
 async function processEventWithArtist(venue, location, preEvent) {

@@ -8,6 +8,7 @@ const { getSocial } = require("../support/misc");
 const { extract } = require("../support/extract");
 const { regexTime, regexMoney } = require("../support/misc");
 const { processEventWithArtistDetails } = require("../support/preEvents");
+const { getEvent } = require("../support/mint");
 
 const logger = require("../support/logger")(path.basename(__filename));
 
@@ -139,16 +140,32 @@ async function etl() {
 }
 
 async function etlDetails() {
-  const url = "https://www.reggieslive.com/show/donny-konz/";
-  const { artists } = await getDetails(url);
-  console.log(artists);
+  const id = 336; // donny-konz
+  const event = await getEvent(id);
+  const { artists } = await getDetails(event.url);
+
   logger.info("artists", { total: artists.length });
-  await processEventWithArtistDetails({}, null, { artists });
+  const venue = {
+    provider: event.provider,
+    venue: event.venue,
+    city: event.city,
+  };
+
+  const preEvent = {
+    ...event,
+    artists,
+  };
+  await processEventWithArtistDetails(venue, event.location, preEvent);
 }
 
 async function main() {
-  // await etl();
-  await etlDetails();
+  const debug = false;
+  if (debug) {
+    await etlDetails();
+    return;
+  }
+
+  await etl();
 }
 
 if (require.main === module) {

@@ -8,16 +8,29 @@ const { metadataProps } = require("./metadata");
 
 const logger = require("./logger")("artist");
 
-async function getArtistSingle(value) {
+const getSlug = (value) => {
   const name = value
     .trim()
-    .replace(/ /g, "+")
+    .replace(/\$/g, "")
+    .replace(/(\W)+/g, "+")
     .replace("and+", "")
     .replace(/\+/g, " ");
   const slug = slugify(name, {
     lower: true,
     strict: true,
   });
+
+  return slug;
+};
+
+async function getArtistSingle(value) {
+  const name = value
+    .trim()
+    .replace(/\$/g, "")
+    .replace(/(\W)+/g, "+")
+    .replace("and+", "")
+    .replace(/\+/g, " ");
+  const slug = getSlug(value);
 
   const query = `slug=${slug}`;
   const [artistFound] = await getArtists(query);
@@ -37,7 +50,7 @@ async function getArtistSingle(value) {
 
   const musicbrainz = await getMusicbrainz(value);
   if (!musicbrainz) {
-    logger.info("NO_PROFILE", {
+    logger.info("ERROR_NO_PROFILE", {
       artist: value,
     });
     return null;
