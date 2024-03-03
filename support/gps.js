@@ -22,8 +22,6 @@ async function getLocationFromDB(slugVenue) {
 }
 
 async function getLocationFromGMaps(event, slugVenue) {
-  const chalk = (await import("chalk").then((mod) => mod)).default;
-
   const params = {
     input: event.venue,
     inputtype: "textquery",
@@ -44,7 +42,7 @@ async function getLocationFromGMaps(event, slugVenue) {
     !Array.isArray(gmapsResponse.data?.candidates) ||
     !gmapsResponse.data.candidates.length
   ) {
-    logger.info(chalk.red("gps not found"), {
+    logger.info("gps not found", {
       venue: event.venue,
     });
 
@@ -113,13 +111,14 @@ async function getGMapsLocation(venue, checkWebsite = true) {
     location.metadata = locationMetadata;
   }
 
-  const website = new URL(venue.url);
-  if (checkWebsite && !location.website?.includes(website.host)) {
-    logger.error("ERROR_WEBSITE", {
-      provider: venue.provider,
-      url: venue.url,
-      maps: location.website,
-    });
+  if (checkWebsite && venue.url) {
+    const website = new URL(venue.url);
+    if (!location.website?.includes(website.host))
+      logger.error("ERROR_WEBSITE", {
+        provider: venue.provider,
+        url: venue.url,
+        maps: location.website,
+      });
   }
 
   return location;

@@ -3,14 +3,11 @@ const async = require("async");
 const moment = require("moment");
 const path = require("path");
 
-const { getMetadata } = require("../support/metadata");
 const { getGMapsLocation } = require("../support/gps");
-const { getSpotify } = require("../support/spotify");
-const { saveEvent } = require("../support/mint");
 const { getSocial } = require("../support/misc");
 const { extract } = require("../support/extract");
 const { regexTime, regexMoney } = require("../support/misc");
-const { getArtistSingle, mergeArtist } = require("../support/artist");
+const { processEventWithArtistDetails } = require("../support/preEvents");
 
 const logger = require("../support/logger")(path.basename(__filename));
 
@@ -94,42 +91,16 @@ async function getDetails(url) {
     return {};
   }
 
-  const response = { artists: [] };
-
   const html = await extract(url);
 
-  const details = transformDetails(html);
+  const { artists } = transformDetails(html);
 
-  await async.eachSeries(details.artists, async (preArtist) => {
-    const artistSingle = await getArtistSingle(preArtist.name);
-
-    const metadata = await getMetadata(preArtist.metadata.website);
-    const spotify = await getSpotify(preArtist);
-
-    const newArtist = mergeArtist(
-      {
-        metadata,
-        spotify,
-      },
-      preArtist
-    );
-
-    if (!Object.keys(newArtist.metadata).length && artistSingle) {
-      response.artists.push(artistSingle);
-      return;
-    }
-
-    const artistMerged = mergeArtist(newArtist, artistSingle);
-
-    if (artistMerged) {
-      response.artists.push(artistMerged);
-    }
-  });
-
-  return response;
+  return {
+    artists,
+  };
 }
 
-async function main() {
+async function etl() {
   const venue = {
     venue: "Reggies Chicago",
     provider: "REGGIESLIVE",
@@ -158,13 +129,26 @@ async function main() {
       city: venue.city,
     };
 
-    await saveEvent(event);
+    await processEventWithArtistDetails(venue, location, event);
   });
 
   logger.info("processed", {
     total: preEvents.length,
     provider: venue.provider,
   });
+}
+
+async function etlDetails() {
+  const url = "https://www.reggieslive.com/show/donny-konz/";
+  const { artists } = await getDetails(url);
+  console.log(artists);
+  logger.info("artists", { total: artists.length });
+  await processEventWithArtistDetails({}, null, { artists });
+}
+
+async function main() {
+  // await etl();
+  await etlDetails();
 }
 
 if (require.main === module) {

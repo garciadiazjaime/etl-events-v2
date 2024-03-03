@@ -1,68 +1,32 @@
 const { Worker } = require("bullmq");
 const path = require("path");
 
-const { processLink } = require("./events");
-const { getGMapsLocation } = require("./gps");
-const { getMetadata } = require("./metadata");
-const { getArtist } = require("./artist");
-const { saveEvent } = require("./mint");
 const { SITE_ETL } = require("../sites");
+const { AGGREGATORS_ETL } = require("../aggregators");
 
 const logger = require("./logger")(path.basename(__filename));
 
 require("dotenv").config();
 
 async function main() {
-  const chalk = (await import("chalk").then((mod) => mod)).default;
-
   const worker = new Worker(
     "livemusic",
     async (job) => {
       logger.info("__job__", { name: job.name, data: job.data });
-      if (job.name === "link") {
-        await processLink([job.data]);
+      if (job.name === "AGGREGATOR") {
+        const etl = AGGREGATORS_ETL[job.data];
+
+        if (typeof etl === "function") {
+          await etl();
+        }
         return;
       }
 
-      if (job.name === "event") {
-        const location = await getGMapsLocation(job.data, false);
-
-        if (!location) {
-          logger.info("no-location", job.data);
-          return;
-        }
-
-        if (location.provider) {
-          logger.info(chalk.green("LOCATION_FROM_PROVIDER"), {
-            provider: location.provider,
-          });
-          return;
-        }
-
-        if (!location.metadata) {
-          const locationMetadata = await getMetadata(location.website);
-          location.metadata = locationMetadata;
-        }
-
-        const event = {
-          ...job.data,
-          location,
-        };
-
-        if (["SONGKICK"].includes(job.data.provider)) {
-          const artists = await getArtist(job.data);
-
-          event.artists = artists;
-        }
-
-        await saveEvent(event);
-      }
-
       if (job.name === "provider") {
-        const siteETL = SITE_ETL[job.data.name];
+        const etl = SITE_ETL[job.data.name];
 
-        if (typeof siteETL === "function") {
-          siteETL();
+        if (typeof etl === "function") {
+          await etl();
         }
       }
     },
@@ -75,7 +39,7 @@ async function main() {
   );
 
   worker.on("completed", ({ name, data }) => {
-    logger.info("done", { name: data.name || name });
+    logger.info("done", { name, data });
   });
 
   worker.on("failed", (job, err) => {

@@ -1,5 +1,3 @@
-const async = require("async");
-
 const slugify = require("slugify");
 
 const { getDataFromWebsite, getImageFromURL } = require("./misc");
@@ -51,20 +49,8 @@ async function getArtistSingle(value) {
     name,
     profile: musicbrainz.profile,
     genres: musicbrainz.genres,
-  };
-
-  artist.metadata = {
-    website: website ? musicbrainz.metadata.website : undefined,
-    image: website?.image,
-    twitter: musicbrainz.metadata.twitter || website?.twitter,
-    facebook: musicbrainz.metadata.facebook || website?.facebook,
-    youtube: musicbrainz.metadata.youtube || website?.youtube,
-    instagram: musicbrainz.metadata.instagram || website?.instagram,
-    tiktok: musicbrainz.metadata.tiktok || website?.tiktok,
-    soundcloud: musicbrainz.metadata.soundcloud || website?.soundcloud,
-    spotify: musicbrainz.metadata.spotify || website?.spotify,
-    appleMusic: musicbrainz.metadata.appleMusic || website?.appleMusic,
-    band_camp: musicbrainz.metadata.bandcamp,
+    slug,
+    metadata: mergeMetadata(musicbrainz, website),
   };
 
   if (!artist.metadata.image && artist.metadata.soundcloud) {
@@ -86,20 +72,26 @@ async function getArtistSingle(value) {
   return artist;
 }
 
-async function getArtist(event) {
-  const response = [];
-  const artists = event.name.includes(",")
-    ? event.name.split(",")
-    : event.name.split(" and ");
+function mergeMetadata(metadataA, metadataB) {
+  const metadata = {};
 
-  await async.eachSeries(artists, async (value) => {
-    const artist = await getArtistSingle(value);
-    if (artist) {
-      response.push(artist);
-    }
+  if (!metadataA && !metadataB) {
+    return metadata;
+  }
+
+  if (!metadataA) {
+    return metadataB;
+  }
+
+  if (!metadataB) {
+    return metadataA;
+  }
+
+  metadataProps.forEach((prop) => {
+    metadata[prop] = metadataA[prop] || metadataB[prop];
   });
 
-  return response;
+  return metadata;
 }
 
 function mergeArtist(artistA, artistB) {
@@ -118,6 +110,7 @@ function mergeArtist(artistA, artistB) {
   const artist = {
     pk: artistA.pk || artistB.pk,
     name: artistA.name || artistB.name,
+    slug: artistA.slug || artistB.slug,
     profile: artistA.profile || artistB.profile,
     genres: artistA.genres || artistB.genres,
     spotify: artistA.spotify || artistB.spotify,
@@ -133,7 +126,6 @@ function mergeArtist(artistA, artistB) {
 }
 
 module.exports = {
-  getArtist,
   getArtistSingle,
   mergeArtist,
 };

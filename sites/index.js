@@ -44,7 +44,7 @@ const SITE_ETL = {
   THALIA_HALL,
 };
 
-const PROVIDERS = [
+const SITES = [
   "ANDYSJAZZCLUB",
   "BEAT_KITCHEN",
   "CITY_WINERY",
@@ -70,5 +70,5 @@ const PROVIDERS = [
 
 module.exports = {
   SITE_ETL,
-  PROVIDERS: PROVIDERS.filter((name) => name === "THALIA_HALL"),
+  SITES: SITES.filter((name) => name === "SUBTERRANEAN"),
 };

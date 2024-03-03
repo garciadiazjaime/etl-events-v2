@@ -1,15 +1,5 @@
-const async = require("async");
-const path = require("path");
-
-const { getGMapsLocation } = require("../support/gps");
-const { saveEvent } = require("../support/mint");
-const { getArtistSingle } = require("../support/artist");
 const { extractJSON } = require("../support/extract");
-const { mergeArtist } = require("../support/artist");
-const { getSpotify } = require("../support/spotify");
-const { getMetadata } = require("../support/metadata");
-
-const logger = require("../support/logger")(path.basename(__filename));
+const { processEventsWithArtistDetails } = require("../support/preEvents");
 
 function transform(data) {
   const { _embedded: embedded } = data;
@@ -81,38 +71,6 @@ function transform(data) {
   return events;
 }
 
-async function getDetails(event) {
-  const response = { artists: [] };
-
-  await async.eachSeries(event.artists, async (preArtist) => {
-    const artistSingle = await getArtistSingle(preArtist.name);
-
-    const metadata = await getMetadata(preArtist.metadata.website);
-    const spotify = await getSpotify(preArtist);
-
-    const newArtist = mergeArtist(
-      {
-        metadata,
-        spotify,
-      },
-      preArtist
-    );
-
-    if (!Object.keys(newArtist.metadata).length && artistSingle) {
-      response.artists.push(artistSingle);
-      return;
-    }
-
-    const artistMerged = mergeArtist(newArtist, artistSingle);
-
-    if (artistMerged) {
-      response.artists.push(artistMerged);
-    }
-  });
-
-  return response;
-}
-
 async function main() {
   const venue = {
     venue: "Thalia Hall",
@@ -120,11 +78,6 @@ async function main() {
     city: "Chicago",
     url: "https://www.thaliahallchicago.com/",
   };
-  const location = await getGMapsLocation(venue);
-
-  if (!location) {
-    return;
-  }
 
   // todo: this api-key seems to expired after 7 days
   const html = await extractJSON(
@@ -138,25 +91,7 @@ async function main() {
 
   const preEvents = transform(html);
 
-  await async.eachSeries(preEvents, async (preEvent) => {
-    const { artists } = await getDetails(preEvent);
-
-    const event = {
-      ...preEvent,
-      artists,
-      location,
-      provider: venue.provider,
-      venue: venue.venue,
-      city: venue.city,
-    };
-
-    await saveEvent(event);
-  });
-
-  logger.info("processed", {
-    total: preEvents.length,
-    provider: venue.provider,
-  });
+  await processEventsWithArtistDetails(venue, preEvents);
 }
 
 if (require.main === module) {

@@ -1,14 +1,19 @@
-const cheerio = require("cheerio");
 const moment = require("moment");
+const cheerio = require("cheerio");
 
-function ChooseChicagoTransformer(html, link) {
+const { extract } = require("../support/extract");
+const {
+  processEventsWithoutArtistAndLocation,
+} = require("../support/preEvents");
+
+function transform(html) {
   const $ = cheerio.load(html);
 
   const events = $(".type-tribe_events")
     .toArray()
     .map((item) => {
-      const name = $(item).find(".card-title").text();
-      const description = $(item).find(".card-body p").text();
+      const name = $(item).find(".card-title").text().trim();
+      const description = $(item).find(".card-body p").text().trim();
       const image = encodeURI($(item).find(".img-cover").data("src"));
       const url = $(item).find(".card-img-link").attr("href");
 
@@ -44,12 +49,40 @@ function ChooseChicagoTransformer(html, link) {
         end_date: endDate.format(),
         venue,
         address: address.text(),
-        city: link.city,
-        provider: link.provider,
       };
     });
 
   return events;
 }
 
-module.exports = { ChooseChicagoTransformer };
+async function etl(url, site) {
+  if (!url) {
+    return;
+  }
+
+  const html = await extract(url);
+
+  const preEvents = transform(html, site);
+
+  await processEventsWithoutArtistAndLocation(preEvents, site);
+}
+
+async function main() {
+  // todo: site has pagination but first page is enough for current events
+  const today = moment();
+  const site = {
+    city: "CHICAGO",
+    provider: "CHOOSECHICAGO",
+    url: `https://www.choosechicago.com/events/?tribe-bar-date=${today.format(
+      "YYYY-M-D"
+    )}&tribe_eventcategory[0]=1242`,
+  };
+
+  etl(site.url, site);
+}
+
+if (require.main === module) {
+  main().then(() => {});
+}
+
+module.exports = main;

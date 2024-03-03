@@ -19,7 +19,7 @@ function transform(data, venue) {
     }
 
     events.push({
-      name: event.contentTitle,
+      name: event.contentTitle || event.description,
       image: event.listImageUrl,
       url: `${venue.url}${event.url}`,
       start_date: event.nextPerformanceDate,

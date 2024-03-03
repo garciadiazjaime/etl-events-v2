@@ -1,9 +1,45 @@
+const path = require("path");
+const { createClient } = require("redis");
+
+const logger = require("./logger")(path.basename(__filename));
+
 require("dotenv").config();
 
-const logger = require("./logger")("spotify");
+const redis = {
+  KEYS: {
+    TOKEN: "spotify_token_v2",
+  },
+  connect: async () => {
+    const client = await createClient()
+      .on("error", (err) => logger.error("Redis Client Error", err))
+      .connect();
+
+    return client;
+  },
+  getToken: async (key) => {
+    const client = await redis.connect();
+    const token = await client.get(key);
+
+    await client.disconnect();
+
+    return token;
+  },
+  setToken: async (key, value) => {
+    const client = await redis.connect();
+    await client.set(key, value, { EX: 60 * 59 });
+
+    await client.disconnect();
+  },
+};
 
 // todo: improve how token is generated
 const getToken = async () => {
+  const token = await redis.getToken(redis.KEYS.TOKEN);
+
+  if (token) {
+    return token;
+  }
+
   const url = "https://accounts.spotify.com/api/token";
 
   const details = {
@@ -20,6 +56,8 @@ const getToken = async () => {
   });
   formBody = formBody.join("&");
 
+  logger.info("request", { url });
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -33,12 +71,15 @@ const getToken = async () => {
     logger.info("token response", data);
     return null;
   }
-  // console.log('spotify-token', data.access_token);
+
+  await redis.setToken(redis.KEYS.TOKEN, data.access_token);
   return data.access_token;
 };
 
 const getArtistDetails = async (token, id) => {
   const url = `https://api.spotify.com/v1/artists/${id}`;
+  logger.info("request", { url });
+
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer  ${token}`,
@@ -98,6 +139,15 @@ async function getSpotify(artist) {
   };
 
   return payload;
+}
+
+async function main() {
+  const token = await getToken();
+  logger.info("token", token);
+}
+
+if (require.main === module) {
+  main().then(() => {});
 }
 
 module.exports = {

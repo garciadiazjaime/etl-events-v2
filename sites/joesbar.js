@@ -55,6 +55,7 @@ function transform(html, venue) {
 
 async function main() {
   // todo: this site returns different HTML than on the browser, with header less browser social links and price can be scrapped
+  // todo: it returns low number of events, worth looking into head less browser
   const venue = {
     venue: "Joe's on Weed St.",
     provider: "JOESBAR",

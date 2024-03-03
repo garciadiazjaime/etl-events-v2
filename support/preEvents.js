@@ -86,6 +86,7 @@ async function processEventsWithArtistDetails(venue, preEvents) {
 }
 
 async function processEventWithArtistDetails(venue, location, preEvent) {
+  logger.info("processing", { name: preEvent.name });
   const artists = [];
 
   await async.eachSeries(preEvent.artists, async (preArtist) => {
@@ -109,8 +110,9 @@ async function processEventWithArtistDetails(venue, location, preEvent) {
     venue: venue.venue,
     city: venue.city,
   };
+  console.log(event);
 
-  await saveEvent(event);
+  // await saveEvent(event);
 }
 
 async function processEventWithArtist(venue, location, preEvent) {
@@ -153,11 +155,76 @@ async function processEventsWithoutArtist(venue, preEvents) {
   });
 }
 
+async function processEventsWithoutArtistAndLocation(preEvents, site) {
+  await async.eachSeries(preEvents, async (preEvent) => {
+    const venue = {
+      venue: preEvent.venue,
+      provider: site.provider,
+      city: site.city,
+    };
+    const location = await getGMapsLocation(venue, false);
+
+    if (!location) {
+      return;
+    }
+
+    const event = {
+      ...preEvent,
+      location,
+      provider: venue.provider,
+      venue: venue.venue,
+      city: venue.city,
+    };
+
+    await saveEvent(event);
+  });
+
+  logger.info("processed", {
+    total: preEvents.length,
+    provider: site.provider,
+  });
+}
+
+async function processEventsWithArtistWithoutLocation(preEvents, site) {
+  await async.eachSeries(preEvents, async (preEvent) => {
+    const venue = {
+      venue: preEvent.venue,
+      provider: site.provider,
+      city: site.city,
+    };
+    const location = await getGMapsLocation(venue, false);
+
+    if (!location) {
+      return;
+    }
+
+    const { artists } = await getArtistsDetails(preEvent);
+
+    const event = {
+      ...preEvent,
+      artists,
+      location,
+      provider: venue.provider,
+      venue: venue.venue,
+      city: venue.city,
+    };
+
+    await saveEvent(event);
+  });
+
+  logger.info("processed", {
+    total: preEvents.length,
+    provider: site.provider,
+  });
+}
+
 module.exports = {
-  processEventsWithArtist,
-  processEventWithArtistDetails,
   getArtistsDetails,
+  processEventsWithArtist,
   processEventsWithArtistDetails,
-  processEventWithArtist,
   processEventsWithoutArtist,
+  processEventsWithoutArtistAndLocation,
+  processEventsWithArtistWithoutLocation,
+  processEventWithArtistDetails,
+  processEventWithArtist,
 };

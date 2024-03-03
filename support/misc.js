@@ -91,7 +91,7 @@ const getFacebook = (value) => {
       "http://www.facebook.com/2008",
     ].find((item) => item === facebook)
   ) {
-    return null;
+    return "";
   }
 
   return facebook;
@@ -293,6 +293,11 @@ const getSocialNetworkFrom = (url) => {
   };
 };
 
+function getOriginFromUrl(url) {
+  const providerUrl = new URL(url);
+  return providerUrl.origin;
+}
+
 module.exports = {
   sleep,
   snakeCase,
@@ -313,4 +318,5 @@ module.exports = {
   getSocialPlusSite,
   getTime,
   removeEmptySpaces,
+  getOriginFromUrl,
 };

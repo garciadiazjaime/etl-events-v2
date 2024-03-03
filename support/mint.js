@@ -12,53 +12,6 @@ async function getEvents(query) {
   return data.results;
 }
 
-async function updateEvent(eventPk, payload) {
-  const response = await fetch(`${EVENTS_API}/${eventPk}/`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-  if (response.status > 201) {
-    logger.error("error updating event:", {
-      eventPk,
-      payload,
-      data,
-    });
-    return null;
-  }
-
-  logger.info("event updated", { pk: data.pk });
-
-  return response;
-}
-
-async function saveLocation(payload) {
-  const response = await fetch(`${EVENTS_API}/locations/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-  if (response.status > 201) {
-    logger.error("error saving location:", {
-      payload,
-      data,
-    });
-    return null;
-  }
-
-  logger.info("location saved", { slug: data.slug });
-
-  return response;
-}
-
 async function getLocations(query) {
   const response = await fetch(`${EVENTS_API}/locations/?${query}`);
 
@@ -67,104 +20,8 @@ async function getLocations(query) {
   return data.results;
 }
 
-async function updateLocation(pk, payload) {
-  const response = await fetch(`${EVENTS_API}/locations/${pk}/`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-  if (response.status > 201) {
-    logger.error("error updating location:", {
-      pk,
-      payload,
-      data,
-    });
-    return null;
-  }
-
-  logger.info("location updated", { pk: data.pk });
-
-  return response;
-}
-
-async function saveMetadata(payload) {
-  const response = await fetch(`${EVENTS_API}/metadata/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-  if (response.status > 201) {
-    logger.error("Error saving metadata", {
-      payload,
-      data,
-    });
-    return null;
-  }
-
-  logger.info("metadata saved", {
-    slug: data.slug,
-  });
-
-  return response;
-}
-
 async function getArtists(query) {
   const response = await fetch(`${EVENTS_API}/artists/?${query}`);
-
-  const data = await response.json();
-
-  return data.results;
-}
-
-async function rankEvents(payload) {
-  const response = await fetch(`${EVENTS_API}/rank/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-
-  logger.info("events ranked", data);
-}
-
-async function updateSpotify(payload, pk) {
-  const response = await fetch(`${EVENTS_API}/spotify/${pk}/`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-
-  if (response.status > 201) {
-    logger.error("error updating spotify:", {
-      pk,
-      payload,
-      data,
-    });
-    return null;
-  }
-
-  logger.info("spotify updated", { pk: data.pk });
-
-  return data;
-}
-
-async function getArtistMetadata(query) {
-  const response = await fetch(`${EVENTS_API}/artists/metadata?${query}`);
 
   const data = await response.json();
 
@@ -180,19 +37,25 @@ async function saveEvent(payload) {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
   if (response.status > 201) {
     logger.info("payload", JSON.stringify(payload, null, 2));
 
-    logger.error("Error saving processed event", {
-      data: JSON.stringify(data),
-    });
+    if (response.status === 500) {
+      logger.error("SERVER_ERROR", {
+        message: response.statusText,
+      });
+
+      return null;
+    }
+
+    const data = await response.json();
+    logger.error("ERROR_SAVING_EVENT", JSON.stringify(data, null, 2));
 
     return null;
   }
 
-  logger.info("processed event saved", {
-    slug: data.name,
+  logger.info("SAVED", {
+    slug: payload.name,
   });
 
   return response;
@@ -201,13 +64,6 @@ async function saveEvent(payload) {
 module.exports = {
   saveEvent,
   getEvents,
-  updateEvent,
-  saveLocation,
   getLocations,
-  updateLocation,
-  saveMetadata,
   getArtists,
-  rankEvents,
-  updateSpotify,
-  getArtistMetadata,
 };

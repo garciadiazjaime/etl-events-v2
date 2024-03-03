@@ -26,7 +26,9 @@ async function getMetadata(url) {
 
   if (
     !url ||
-    ["youtube.com", "instagram.com"].find((item) => url.includes(item))
+    ["youtube.com", "instagram.com", "maps.google.com"].find((item) =>
+      url.includes(item)
+    )
   ) {
     logger.info("skipping", { url });
     return {};
