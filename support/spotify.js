@@ -101,7 +101,7 @@ const getArtistDetails = async (token, id) => {
 
 async function getSpotify(artist) {
   if (!artist.metadata?.spotify) {
-    logger.info("ERROR_NO_SPOTIFY", {
+    logger.info("NO_SPOTIFY", {
       name: artist.name,
     });
     return null;

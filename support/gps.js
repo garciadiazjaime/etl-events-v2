@@ -114,7 +114,7 @@ async function getGMapsLocation(venue, checkWebsite = true) {
   if (checkWebsite && venue.url) {
     const website = new URL(venue.url);
     if (!location.website?.includes(website.host))
-      logger.error("ERROR_WEBSITE", {
+      logger.error("FAIL_WEBSITE", {
         provider: venue.provider,
         url: venue.url,
         maps: location.website,

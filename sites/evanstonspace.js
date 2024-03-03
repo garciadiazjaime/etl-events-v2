@@ -3,7 +3,7 @@ const path = require("path");
 
 const { getGMapsLocation } = require("../support/gps");
 const { saveEvent } = require("../support/mint");
-const { getArtistSingle } = require("../support/artist");
+const { getArtistSingle, mergeArtist } = require("../support/artist");
 const { extractJSON } = require("../support/extract");
 
 const logger = require("../support/logger")(path.basename(__filename));
@@ -88,39 +88,13 @@ async function getDetails(event) {
     const artist = await getArtistSingle(preArtist.name);
 
     if (!artist) {
-      response.artists.push(preArtist);
+      logger.info("ARTIST_UNKNOWN", preArtist);
       return;
     }
 
-    if (!artist.genres?.length) {
-      artist.genres = preArtist.genres;
-    }
+    const artistMerged = mergeArtist(artist, preArtist);
 
-    const props = [
-      "youtube",
-      "twitter",
-      "appleMusic",
-      "facebook",
-      "spotify",
-      "instagram",
-      "website",
-      "wiki",
-      "musicbrainz",
-      "lastfm",
-      "image",
-    ];
-
-    if (preArtist.metadata && !artist.metadata) {
-      artist.metadata = {};
-    }
-
-    props.forEach((prop) => {
-      if (!artist.metadata[prop]) {
-        artist.metadata[prop] = preArtist.metadata[prop];
-      }
-    });
-
-    response.artists.push(artist);
+    response.artists.push(artistMerged);
   });
 
   return response;

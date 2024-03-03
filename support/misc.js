@@ -26,7 +26,6 @@ const facebookRegex =
   /http(?:s)?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9_.]+)/gi;
 const youtubeSimpleRegex =
   /http(?:s)?:\/\/(?:www\.)?youtube\.com\/([@a-zA-Z0-9_]+)/;
-const youtubeWatchRegex = /https?:\/\/(?:www\.)?youtube\.com\/watch\?[^"]+/;
 const youtubeRegex =
   /https?:\/\/(?:www\.)?youtube\.com\/(?:embed\/|channel\/|user\/|watch\?v=|[^/]+)([a-zA-Z0-9_-]+)/;
 const instagramRegex =
@@ -112,14 +111,10 @@ const getYoutube = (_value) => {
   let youtube = value.match(youtubeSimpleRegex)?.[0];
 
   if (!isYoutubeValid(youtube)) {
-    youtube = value.match(youtubeWatchRegex)?.[0];
+    youtube = value.match(youtubeRegex)?.[0];
 
     if (!isYoutubeValid(youtube)) {
-      youtube = value.match(youtubeRegex)?.[0];
-
-      if (!isYoutubeValid(youtube)) {
-        return null;
-      }
+      return "";
     }
   }
 

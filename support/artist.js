@@ -50,7 +50,7 @@ async function getArtistSingle(value) {
 
   const musicbrainz = await getMusicbrainz(value);
   if (!musicbrainz) {
-    logger.info("ERROR_NO_PROFILE", {
+    logger.info("NO_PROFILE", {
       artist: value,
     });
     return null;
