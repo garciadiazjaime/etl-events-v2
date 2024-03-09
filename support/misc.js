@@ -1,6 +1,9 @@
 const cheerio = require("cheerio");
+const path = require("path");
 
-const logger = require("./logger")("misc");
+const { extract } = require("./extract");
+
+const logger = require("./logger")(path.basename(__filename));
 
 const sleep = async (ms = 1_000) => {
   logger.info("sleeping", {
@@ -27,7 +30,7 @@ const facebookRegex =
 const youtubeSimpleRegex =
   /http(?:s)?:\/\/(?:www\.)?youtube\.com\/([@a-zA-Z0-9_]+)/;
 const youtubeRegex =
-  /https?:\/\/(?:www\.)?youtube\.com\/(?:embed\/|channel\/|user\/|watch\?v=|[^/]+)([a-zA-Z0-9_-]+)/;
+  /https?:\/\/(?:www\.)?youtube\.com\/(?:embed\/|channel\/|user\/|watch\?v=|[^/]+)([a-zA-Z0-9_-]+)/gi;
 const instagramRegex =
   /http(?:s)?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_.]+)/gi;
 const tiktokRegex = /http(?:s)?:\/\/(?:www\.)?tiktok\.com\/([a-zA-Z0-9_]+)/gi;
@@ -42,7 +45,8 @@ const bandCampRegex =
   /https:\/\/(?:\w+\.bandcamp\.com\/|bandcamp\.com\/EmbeddedPlayer\/v=2\/)(album|track)=\d+/;
 const linkTreeRegex = /http(?:s)?:\/\/(?:www\.)?linktr\.ee\/([a-zA-Z0-9_]+)/i;
 
-const validURL = (value) => urlValidRegex.test(value);
+const validURL = (value) =>
+  value && !value.includes(" ") && urlValidRegex.test(value);
 
 const getURL = (value) => value.match(urlValidRegex)?.[0];
 
@@ -88,6 +92,7 @@ const getFacebook = (value) => {
       "https://www.facebook.com/profile",
       "https://www.facebook.com/tr",
       "http://www.facebook.com/2008",
+      "https://www.facebook.com/share.php",
     ].find((item) => item === facebook)
   ) {
     return "";
@@ -111,14 +116,12 @@ const getYoutube = (_value) => {
   let youtube = value.match(youtubeSimpleRegex)?.[0];
 
   if (!isYoutubeValid(youtube)) {
-    youtube = value.match(youtubeRegex)?.[0];
-
-    if (!isYoutubeValid(youtube)) {
-      return "";
-    }
+    youtube = value
+      .match(youtubeRegex)
+      ?.find((item) => validURL(item) && isYoutubeValid(item));
   }
 
-  return youtube;
+  return youtube || "";
 };
 
 const getInstagram = (value) => {
@@ -239,15 +242,7 @@ async function getDataFromWebsite(url) {
     return null;
   }
 
-  const response = await fetch(url).catch(() => false);
-
-  if (!response) {
-    logger.info("website error", { url });
-
-    return null;
-  }
-
-  const html = await response.text();
+  const html = await extract(url);
 
   const social = getSocial(html, url);
 
@@ -293,6 +288,18 @@ function getOriginFromUrl(url) {
   return providerUrl.origin;
 }
 
+function getImageURL(value, baseURL) {
+  if (!value) {
+    return "";
+  }
+
+  if (value.includes("http")) {
+    return value;
+  }
+
+  return `${baseURL}${value}`;
+}
+
 module.exports = {
   sleep,
   snakeCase,
@@ -314,4 +321,5 @@ module.exports = {
   getTime,
   removeEmptySpaces,
   getOriginFromUrl,
+  getImageURL,
 };

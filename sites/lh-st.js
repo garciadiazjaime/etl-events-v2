@@ -6,7 +6,7 @@ const path = require("path");
 const { getGMapsLocation } = require("../support/gps");
 const { saveEvent } = require("../support/mint");
 const { getSocialNetworkFrom, getInstagram } = require("../support/misc");
-const { getArtistSingle } = require("../support/artist");
+const { getArtistSingle, mergeArtist } = require("../support/artist");
 const { extract } = require("../support/extract");
 
 const logger = require("../support/logger")(path.basename(__filename));
@@ -126,37 +126,12 @@ async function getDetails(url) {
     const artistSingle = await getArtistSingle(preArtist.name);
 
     if (!artistSingle) {
-      if (preArtist.name && Object.keys(preArtist.metadata).length) {
-        response.artists.push(preArtist);
-      }
+      logger.info("ARTIST_UNKNOWN", preArtist);
 
       return;
     }
 
-    const artistMerged = {
-      name: preArtist.name || artistSingle.name,
-      profile: artistSingle.profile,
-      genres: artistSingle.genres,
-      metadata: {
-        image: artistSingle.metadata?.image,
-        website: artistSingle.metadata?.website || preArtist.metadata.website,
-        twitter: artistSingle.metadata?.twitter || preArtist.metadata.twitter,
-        facebook:
-          artistSingle.metadata?.facebook || preArtist.metadata.facebook,
-        youtube: artistSingle.metadata?.youtube || preArtist.metadata.youtube,
-        instagram:
-          artistSingle.metadata?.instagram || preArtist.metadata.instagram,
-        tiktok: artistSingle.metadata?.tiktok || preArtist.metadata.tiktok,
-        soundcloud:
-          artistSingle.metadata?.soundcloud || preArtist.metadata.soundcloud,
-        spotify: artistSingle.metadata?.spotify || preArtist.metadata.spotify,
-        appleMusic:
-          artistSingle.metadata?.appleMusic || preArtist.metadata.appleMusic,
-        band_camp:
-          artistSingle.metadata?.band_camp || preArtist.metadata.bandcamp,
-      },
-      spotify: artistSingle.spotify,
-    };
+    const artistMerged = mergeArtist(artistSingle, preArtist);
 
     response.artists.push(artistMerged);
   });

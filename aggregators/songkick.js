@@ -73,7 +73,7 @@ async function main() {
     )}&filters[maxDate]=${endDate.format("M/D/YYYY")}`,
   };
 
-  etl(site.url, site);
+  await etl(site.url, site);
 }
 
 if (require.main === module) {

@@ -88,7 +88,7 @@ const getArtistDetails = async (token, id) => {
 
   const data = await response.json();
   if (response.status > 200) {
-    logger.info("error artist detail:", {
+    logger.info("INVALID_ARTIST:", {
       token,
       id,
       data,

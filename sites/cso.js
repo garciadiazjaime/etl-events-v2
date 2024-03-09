@@ -4,7 +4,7 @@ const path = require("path");
 const moment = require("moment");
 
 const { extract, extractJSON } = require("../support/extract");
-const { removeHTML, getPrice } = require("../support/misc");
+const { removeHTML, getPrice, getImageURL } = require("../support/misc");
 const { processEventWithArtist } = require("../support/preEvents");
 const { getGMapsLocation } = require("../support/gps");
 
@@ -20,7 +20,7 @@ function transform(data, venue) {
 
     events.push({
       name: event.contentTitle || event.description,
-      image: event.listImageUrl,
+      image: getImageURL(event.listImageUrl, venue.url),
       url: `${venue.url}${event.url}`,
       start_date: event.nextPerformanceDate,
       description: removeHTML(event.contentMetaDescription),

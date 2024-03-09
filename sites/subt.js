@@ -1,8 +1,11 @@
 const cheerio = require("cheerio");
 const moment = require("moment");
+const path = require("path");
 
 const { extract } = require("../support/extract");
 const { processEventsWithArtist } = require("../support/preEvents");
+const { getTime } = require("../support/misc");
+const logger = require("../support/logger")(path.basename(__filename));
 
 function getArtists(value) {
   if (!value || value.includes(":")) {
@@ -27,31 +30,33 @@ function transformDetails($) {
 
 function transform(html) {
   const $ = cheerio.load(html);
-  const regexTime = /(1[0-2]|0?[1-9]):([0-5][0-9])\s?([AaPp][Mm])/;
 
-  const events = $(".seetickets-list-event-container")
+  const events = [];
+
+  $(".seetickets-list-event-container")
     .toArray()
-    .map((item) => {
+    .forEach((item) => {
       const name = $(item).find(".event-title").text().trim();
       const url = $(item).find(".event-title a").attr("href");
       const image = $(item).find("img").attr("src");
-      const date = $(item).find(".event-date").text().trim();
-      const time = $(item)
-        .find(".see-doortime ")
-        .text()
-        .trim()
-        .match(regexTime)?.[0]
-        .replace(" ", "");
+      // todo: save extra dates when value includes "-"
+      const date = $(item).find(".event-date").text().split("-")[0].trim();
+      const time = getTime($(item).find(".door-time").text());
 
       const dateTime = `${date} ${time}`;
 
-      const startDate = moment(dateTime, "ddd MMM D h:mma");
+      const startDate = moment(dateTime, "ddd MMM DD h:mm a");
+      if (!startDate.isValid()) {
+        logger.info("INVALID_DATE", { name, startDate });
+        return;
+      }
+
       const description = $(item).find(".doortime-showtime").text().trim();
       const buyUrl = $(item).find("a.seetickets-buy-btn").attr("href");
 
       const { artists } = transformDetails($(item));
 
-      const event = {
+      events.push({
         name,
         image,
         url,
@@ -59,9 +64,7 @@ function transform(html) {
         description,
         buyUrl,
         artists,
-      };
-
-      return event;
+      });
     });
 
   return events;

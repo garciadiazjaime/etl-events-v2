@@ -27,7 +27,7 @@ async function getLocationFromGMaps(event, slugVenue) {
     inputtype: "textquery",
     key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     fields: ["place_id", "name", "formatted_address", "geometry"],
-    locationbias: "circle:30000@41.8336152,-87.8967663",
+    locationbias: "circle:20000@41.8336152,-87.8967663",
   };
 
   await sleep();
@@ -102,7 +102,7 @@ async function getGMapsLocation(venue, checkWebsite = true) {
   const location = await getLocationFromGMaps(venue, slugVenue);
 
   if (!location) {
-    logger.error("NO_LOCATION", venue);
+    logger.info("INVALID_LOCATION", venue);
     return null;
   }
 

@@ -12,5 +12,5 @@ const AGGREGATORS = ["CHOOSECHICAGO", "DO312", "SONGKICK"];
 
 module.exports = {
   AGGREGATORS_ETL,
-  AGGREGATORS: AGGREGATORS.filter((name) => name === "CHOOSECHICAGO"),
+  AGGREGATORS: AGGREGATORS.filter((name) => name),
 };

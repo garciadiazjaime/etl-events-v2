@@ -23,6 +23,28 @@ const getSlug = (value) => {
   return slug;
 };
 
+function mergeMetadata(metadataA, metadataB) {
+  const metadata = {};
+
+  if (!metadataA && !metadataB) {
+    return metadata;
+  }
+
+  if (!metadataA) {
+    return metadataB;
+  }
+
+  if (!metadataB) {
+    return metadataA;
+  }
+
+  metadataProps.forEach((prop) => {
+    metadata[prop] = metadataA[prop] || metadataB[prop];
+  });
+
+  return metadata;
+}
+
 async function getArtistSingle(value) {
   const name = value
     .trim()
@@ -83,28 +105,6 @@ async function getArtistSingle(value) {
   }
 
   return artist;
-}
-
-function mergeMetadata(metadataA, metadataB) {
-  const metadata = {};
-
-  if (!metadataA && !metadataB) {
-    return metadata;
-  }
-
-  if (!metadataA) {
-    return metadataB;
-  }
-
-  if (!metadataB) {
-    return metadataA;
-  }
-
-  metadataProps.forEach((prop) => {
-    metadata[prop] = metadataA[prop] || metadataB[prop];
-  });
-
-  return metadata;
 }
 
 function mergeArtist(artistA, artistB) {

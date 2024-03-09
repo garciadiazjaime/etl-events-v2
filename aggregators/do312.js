@@ -65,7 +65,7 @@ async function main() {
     url: `https://do312.com/events/live-music/${today.format("YYYY/MM/DD")}`,
   };
 
-  etl(site.url, site);
+  await etl(site.url, site);
 }
 
 if (require.main === module) {

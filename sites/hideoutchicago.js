@@ -3,13 +3,10 @@ const async = require("async");
 const moment = require("moment");
 const path = require("path");
 
-const { getMetadata } = require("../support/metadata");
 const { getGMapsLocation } = require("../support/gps");
-const { getSpotify } = require("../support/spotify");
-const { saveEvent } = require("../support/mint");
 const { extract } = require("../support/extract");
-const { getArtistSingle } = require("../support/artist");
 const { regexTime } = require("../support/misc");
+const { processEventWithArtistDetails } = require("../support/preEvents");
 
 const logger = require("../support/logger")(path.basename(__filename));
 
@@ -43,58 +40,8 @@ async function getEventDetails(url) {
   const html = await extract(url);
 
   const eventDetails = transformEventDetails(html);
-  const artists = [];
 
-  await async.eachSeries(eventDetails.artists, async (preArtist) => {
-    const artist = await getArtistSingle(preArtist.name);
-
-    if (!preArtist.metadata.website && artist) {
-      artists.push(artist);
-      return;
-    }
-
-    const metadata = await getMetadata(preArtist.metadata.website);
-    const spotify = await getSpotify(preArtist);
-
-    const newArtist = {
-      name: preArtist.name,
-      metadata,
-      spotify,
-    };
-
-    if (!artist) {
-      artists.push(newArtist);
-      return;
-    }
-
-    const artistMerged = {
-      ...artist,
-      metadata: {
-        website: artist.metadata?.website || newArtist.metadata?.website,
-        image: artist.metadata?.image || newArtist.metadata?.image,
-        twitter: artist.metadata?.twitter || newArtist.metadata?.twitter,
-        facebook: artist.metadata?.facebook || newArtist.metadata?.facebook,
-        youtube: artist.metadata?.youtube || newArtist.metadata?.youtube,
-        instagram: artist.metadata?.instagram || newArtist.metadata?.instagram,
-        tiktok: artist.metadata?.tiktok || newArtist.metadata?.tiktok,
-        soundcloud:
-          artist.metadata?.soundcloud || newArtist.metadata?.soundcloud,
-        spotify: artist.metadata?.spotify || newArtist.metadata?.spotify,
-        appleMusic:
-          artist.metadata?.appleMusic || newArtist.metadata?.appleMusic,
-        band_camp: artist.metadata?.band_camp || newArtist.metadata?.band_camp,
-      },
-      spotify,
-    };
-
-    artists.push(artistMerged);
-  });
-
-  return {
-    price: eventDetails.price,
-    buyUrl: eventDetails.buyUrl,
-    artists,
-  };
+  return eventDetails;
 }
 
 function transform(html) {
@@ -149,16 +96,13 @@ async function main() {
   await async.eachSeries(preEvents, async (preEvent) => {
     const { price, buyUrl, artists } = await getEventDetails(preEvent.url);
 
-    await saveEvent({
+    const event = {
       ...preEvent,
       price,
       buyUrl,
       artists,
-      location,
-      provider: venue.provider,
-      venue: venue.venue,
-      city: venue.city,
-    });
+    };
+    await processEventWithArtistDetails(venue, location, event);
   });
 
   logger.info("processed", {

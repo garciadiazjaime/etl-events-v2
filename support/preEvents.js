@@ -61,6 +61,11 @@ async function processEventsWithArtistDetails(venue, preEvents) {
     await async.eachSeries(preEvent.artists, async (preArtist) => {
       const artistSingle = await getArtistSingle(preArtist.name);
 
+      if (!artistSingle) {
+        logger.info("ARTIST_UNKNOWN", preArtist);
+        return;
+      }
+
       const artistMerged = mergeArtist(artistSingle, preArtist);
       if (artistMerged) {
         artists.push(artistMerged);
@@ -86,7 +91,6 @@ async function processEventsWithArtistDetails(venue, preEvents) {
 }
 
 async function processEventWithArtistDetails(venue, location, preEvent) {
-  logger.info("processing", { name: preEvent.name });
   const artists = [];
 
   await async.eachSeries(preEvent.artists, async (preArtist) => {
@@ -152,6 +156,7 @@ async function processEventsWithoutArtist(venue, preEvents) {
   });
 }
 
+// used only by aggregator
 async function processEventsWithoutArtistAndLocation(preEvents, site) {
   await async.eachSeries(preEvents, async (preEvent) => {
     const venue = {
@@ -162,6 +167,15 @@ async function processEventsWithoutArtistAndLocation(preEvents, site) {
     const location = await getGMapsLocation(venue, false);
 
     if (!location) {
+      return;
+    }
+
+    if (location.provider) {
+      logger.info("PROVIDER_FOUND", {
+        venue: location.slug,
+        location: location.provider,
+        provider: site.provider,
+      });
       return;
     }
 
@@ -182,6 +196,7 @@ async function processEventsWithoutArtistAndLocation(preEvents, site) {
   });
 }
 
+// used only by aggregator
 async function processEventsWithArtistWithoutLocation(preEvents, site) {
   await async.eachSeries(preEvents, async (preEvent) => {
     const venue = {
@@ -192,6 +207,15 @@ async function processEventsWithArtistWithoutLocation(preEvents, site) {
     const location = await getGMapsLocation(venue, false);
 
     if (!location) {
+      return;
+    }
+
+    if (location.provider) {
+      logger.info("PROVIDER_FOUND", {
+        venue: location.slug,
+        location: location.provider,
+        provider: site.provider,
+      });
       return;
     }
 

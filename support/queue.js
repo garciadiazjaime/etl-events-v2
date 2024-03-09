@@ -26,12 +26,8 @@ async function main() {
     },
   });
 
-  const flag = false;
-  if (flag) {
-    await queueAggregators(myQueue);
-  } else {
-    await queueSites(myQueue);
-  }
+  await queueSites(myQueue);
+  await queueAggregators(myQueue);
 }
 
 main().then(() => {

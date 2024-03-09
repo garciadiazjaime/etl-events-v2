@@ -78,7 +78,7 @@ async function main() {
     )}&tribe_eventcategory[0]=1242`,
   };
 
-  etl(site.url, site);
+  await etl(site.url, site);
 }
 
 if (require.main === module) {

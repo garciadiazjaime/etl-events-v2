@@ -85,14 +85,14 @@ async function getDetails(event) {
   const response = { artists: [] };
 
   await async.eachSeries(event.artists, async (preArtist) => {
-    const artist = await getArtistSingle(preArtist.name);
+    const artistSingle = await getArtistSingle(preArtist.name);
 
-    if (!artist) {
+    if (!artistSingle) {
       logger.info("ARTIST_UNKNOWN", preArtist);
       return;
     }
 
-    const artistMerged = mergeArtist(artist, preArtist);
+    const artistMerged = mergeArtist(artistSingle, preArtist);
 
     response.artists.push(artistMerged);
   });

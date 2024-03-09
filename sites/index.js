@@ -70,5 +70,5 @@ const SITES = [
 
 module.exports = {
   SITE_ETL,
-  SITES: SITES.filter((name) => name === name),
+  SITES: SITES.filter((name) => name),
 };

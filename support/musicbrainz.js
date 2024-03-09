@@ -89,10 +89,11 @@ async function getMusicbrainz(name) {
   const profile = await getProfileFromMusicbrainz(name);
 
   if (!validURL(profile)) {
-    logger.info("invalid profile", { name, profile });
+    logger.info("INVALID_PROFILE", { name, profile });
     return null;
   }
 
+  // todo: getSocialFromProfile returns { genres, metadata }, rename method
   const social = await getSocialFromProfile(profile);
 
   return {
