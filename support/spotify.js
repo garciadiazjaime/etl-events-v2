@@ -10,7 +10,9 @@ const redis = {
     TOKEN: "spotify_token_v2",
   },
   connect: async () => {
-    const client = await createClient()
+    const client = await createClient({
+      url: `redis://${process.env.REDIS_HOST}`,
+    })
       .on("error", (err) => logger.error("Redis Client Error", err))
       .connect();
 

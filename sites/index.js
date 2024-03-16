@@ -20,7 +20,7 @@ const SLEEPING_VILLAGE = require("./sleepingvillage");
 const SUBTERRANEAN = require("./subt");
 const THALIA_HALL = require("./thaliahallchicago");
 
-const SITE_ETL = {
+module.exports.SITE_ETL = {
   ANDYSJAZZCLUB,
   BEAT_KITCHEN,
   CITY_WINERY,
@@ -44,7 +44,7 @@ const SITE_ETL = {
   THALIA_HALL,
 };
 
-const SITES = [
+module.exports.SITES = [
   "ANDYSJAZZCLUB",
   "BEAT_KITCHEN",
   "CITY_WINERY",
@@ -67,8 +67,3 @@ const SITES = [
   "SUBTERRANEAN",
   "THALIA_HALL",
 ];
-
-module.exports = {
-  SITE_ETL,
-  SITES: SITES.filter((name) => name),
-};
