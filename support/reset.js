@@ -28,7 +28,7 @@ async function saveToS3(events) {
 }
 
 async function createInvalidation() {
-  const client = new CloudFrontClient();
+  const client = new CloudFrontClient({ region: "us-west-2" });
 
   const params = {
     DistributionId: "EOU0PLBOU18RM",
