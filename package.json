@@ -12,12 +12,15 @@
     "docker:build": "docker build -t garciadiazjaime/etl-events-v2 . --platform linux/amd64",
     "docker:push": "docker push garciadiazjaime/etl-events-v2",
     "docker:run": "docker run --env-file .env -d --link redis:redis garciadiazjaime/etl-events-v2",
-    "d": "npm run docker:build && npm run docker:push && echo 'docker pull garciadiazjaime/etl-events-v2'"
+    "d": "npm run docker:build && npm run docker:push && echo 'docker pull garciadiazjaime/etl-events-v2'",
+    "r": "node support/reset.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-cloudfront": "^3.535.0",
+    "@aws-sdk/client-s3": "^3.535.0",
     "@googlemaps/google-maps-services-js": "^3.3.42",
     "@logtail/node": "^0.4.21",
     "async": "^3.2.5",
