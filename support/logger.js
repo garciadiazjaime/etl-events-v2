@@ -12,7 +12,7 @@ function logger(reference) {
     },
     error: (msg, payload) => {
       console.log(`ERROR:${reference}`, msg, payload);
-      logtail.error(reference, msg);
+      logtail.error(reference, { msg, payload });
     },
     flush: () => {
       logtail.flush();
