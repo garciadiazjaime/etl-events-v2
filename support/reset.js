@@ -36,7 +36,7 @@ async function createInvalidation() {
       CallerReference: String(new Date().getTime()),
       Paths: {
         Quantity: 1,
-        Items: ["/public/events.json"],
+        Items: ["/public/events.json", "/data/*"],
       },
     },
   };

@@ -9,6 +9,8 @@ const { getMetadata } = require("./metadata");
 
 const logger = require("./logger")(path.basename(__filename));
 
+const addressRegex = /[\w+]{2} [\d+]{5}/;
+
 async function getLocationFromDB(slugVenue) {
   const query = `slug_venue=${slugVenue}`;
   const [location] = await getLocations(query);
@@ -55,6 +57,15 @@ async function getLocationFromGMaps(event, slugVenue) {
     name,
     place_id: placeId,
   } = gmapsResponse.data.candidates[0];
+
+  if (!address?.match(addressRegex)?.[0]?.includes("IL")) {
+    logger.info("EVENT_OTHER_STATE", {
+      venue: event.venue,
+      address,
+    });
+
+    return null;
+  }
 
   const paramsDetails = {
     place_id: placeId,
