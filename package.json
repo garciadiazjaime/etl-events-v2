@@ -11,7 +11,9 @@
     "lint": "eslint . --fix",
     "docker:build": "docker build -t garciadiazjaime/etl-events-v2 . --platform linux/amd64",
     "docker:push": "docker push garciadiazjaime/etl-events-v2",
-    "docker:run": "docker run --env-file .env -d --link redis:redis garciadiazjaime/etl-events-v2",
+    "docker:run": "npm run docker:run:redis && npm run docker:run:etl",
+    "docker:run:etl": "docker run --env-file .env -d --link redis:redis garciadiazjaime/etl-events-v2 npm start",
+    "docker:run:redis": "docker run -d -p 6379:6379 --name redis redis --platform linux/amd64",
     "d": "npm run docker:build && npm run docker:push && echo 'docker pull garciadiazjaime/etl-events-v2'",
     "r": "node support/reset.js"
   },
