@@ -27,7 +27,7 @@ async function saveToS3(events) {
   logger.info("s3 uploaded", response);
 }
 
-async function createInvalidation() {
+async function createInvalidation(path) {
   const client = new CloudFrontClient({ region: "us-west-2" });
 
   const params = {
@@ -36,7 +36,7 @@ async function createInvalidation() {
       CallerReference: String(new Date().getTime()),
       Paths: {
         Quantity: 1,
-        Items: ["/public/events.json", "/data/*"],
+        Items: [path],
       },
     },
   };
@@ -65,7 +65,8 @@ async function resetEvents() {
   const events = await getEvents(query);
 
   await saveToS3(events);
-  await createInvalidation();
+  await createInvalidation("/public/events.json");
+  await createInvalidation("/data/*");
   await triggerDeploy();
 
   logger.info(`events`, {
