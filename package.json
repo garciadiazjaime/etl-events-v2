@@ -15,7 +15,8 @@
     "docker:run:etl": "docker run --env-file .env -d --link redis:redis garciadiazjaime/etl-events-v2 npm start",
     "docker:run:redis": "docker run -d -p 6379:6379 --name redis redis --platform linux/amd64",
     "d": "npm run docker:build && npm run docker:push && echo 'docker pull garciadiazjaime/etl-events-v2'",
-    "r": "node support/reset.js"
+    "r": "node support/reset.js",
+    "import:musico": "node dataset/artists.js"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +29,7 @@
     "async": "^3.2.5",
     "bullmq": "^5.1.11",
     "cheerio": "^1.0.0-rc.12",
+    "csv": "^6.3.8",
     "dotenv": "^16.4.4",
     "moment": "^2.30.1",
     "nodemon": "^3.0.3",

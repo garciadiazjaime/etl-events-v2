@@ -20,30 +20,8 @@ const regexTime =
 const regexMoney = /\$(\d+)/;
 const regexEmptySpaces = /(\r\n|\n|\r|\t)/g;
 
-const snakeCase = (value) => value.trim().replace(/ /g, "_");
-
 const urlValidRegex =
-  /https?:\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,})(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(#[-a-z\d_]*)?/gi;
-const twitterRegex = /http(?:s)?:\/\/(?:www\.)?twitter\.com\/([a-zA-Z0-9_]+)/gi;
-const facebookRegex =
-  /http(?:s)?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9_.]+)/gi;
-const youtubeSimpleRegex =
-  /http(?:s)?:\/\/(?:www\.)?youtube\.com\/([@a-zA-Z0-9_]+)/;
-const youtubeRegex =
-  /https?:\/\/(?:www\.)?youtube\.com\/(?:embed\/|channel\/|user\/|watch\?v=|[^/]+)([a-zA-Z0-9_-]+)/gi;
-const instagramRegex =
-  /http(?:s)?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_.]+)/gi;
-const tiktokRegex = /http(?:s)?:\/\/(?:www\.)?tiktok\.com\/([a-zA-Z0-9_]+)/gi;
-const soundcloudRegex =
-  /http(?:s)?:\/\/(?:www\.)?soundcloud\.com\/([a-zA-Z0-9_-]+)/gi;
-const spotifyRegex =
-  /https?:\/\/open\.spotify\.com\/(track|user|artist|album)\/[a-zA-Z0-9]+(\/playlist\/[a-zA-Z0-9]+|)|spotify:(track|user|artist|album):[a-zA-Z0-9]+(:playlist:[a-zA-Z0-9]+|)/gi;
-const appleMusicRegex =
-  /https?:\/\/music\.apple\.com\/([a-zA-Z]{2})\/(album|artist|playlist|station)\/([a-zA-Z0-9_-]+)\/(\d+)/gi;
-const bandCampSimpleRegex = /https:\/\/([a-zA-Z0-9_-]+\.)bandcamp\.com/;
-const bandCampRegex =
-  /https:\/\/(?:\w+\.bandcamp\.com\/|bandcamp\.com\/EmbeddedPlayer\/v=2\/)(album|track)=\d+/;
-const linkTreeRegex = /http(?:s)?:\/\/(?:www\.)?linktr\.ee\/([a-zA-Z0-9_]+)/i;
+  /https?:\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,})(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(#[-a-z\d_]*)?/i;
 
 const validURL = (value) =>
   value && !value.includes(" ") && urlValidRegex.test(value);
@@ -70,6 +48,9 @@ const getImage = (html, website) => {
 };
 
 const getTwitter = (value) => {
+  const twitterRegex =
+    /http(?:s)?:\/\/(?:www\.)?twitter\.com\/([a-zA-Z0-9_]+)/gi;
+
   const twitter = value
     .match(twitterRegex)
     ?.filter((item) => !item.includes("twitter.com/intent"))[0];
@@ -82,6 +63,9 @@ const getTwitter = (value) => {
 };
 
 const getFacebook = (value) => {
+  const facebookRegex =
+    /http(?:s)?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9_.]+)/gi;
+
   const facebook = value
     .match(facebookRegex)
     ?.filter((item) => !item.includes("facebook.com/sharer"))[0];
@@ -112,6 +96,11 @@ const isYoutubeValid = (value) =>
   ].find((item) => item === value);
 
 const getYoutube = (_value) => {
+  const youtubeSimpleRegex =
+    /http(?:s)?:\/\/(?:www\.)?youtube\.com\/([@a-zA-Z0-9_]+)/;
+  const youtubeRegex =
+    /https?:\/\/(?:www\.)?youtube\.com\/(?:embed\/|channel\/|user\/|watch\?v=|[^/]+)([a-zA-Z0-9_-]+)/gi;
+
   const value = _value.replace(/&amp;/g, "&");
   let youtube = value.match(youtubeSimpleRegex)?.[0];
 
@@ -125,6 +114,9 @@ const getYoutube = (_value) => {
 };
 
 const getInstagram = (value) => {
+  const instagramRegex =
+    /http(?:s)?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_.]+)/gi;
+
   const instagram = value
     .match(instagramRegex)
     ?.filter((item) => item !== "https://www.instagram.com/explore")[0];
@@ -133,6 +125,10 @@ const getInstagram = (value) => {
 };
 
 const getBandCamp = (value) => {
+  const bandCampSimpleRegex = /https:\/\/([a-zA-Z0-9_-]+\.)bandcamp\.com/;
+  const bandCampRegex =
+    /https:\/\/(?:\w+\.bandcamp\.com\/|bandcamp\.com\/EmbeddedPlayer\/v=2\/)(album|track)=\d+/;
+
   const bandCamp =
     value.match(bandCampRegex)?.[0] || value.match(bandCampSimpleRegex)?.[0];
 
@@ -144,16 +140,38 @@ const getBandCamp = (value) => {
 };
 
 const getLinkTree = (value) => {
+  const linkTreeRegex = /http(?:s)?:\/\/(?:www\.)?linktr\.ee\/([a-zA-Z0-9_]+)/i;
+
   const linkTree = value.match(linkTreeRegex)?.[0];
 
   return linkTree;
 };
 
-const getTiktok = (value) => value.match(tiktokRegex)?.pop();
-const getSoundcloud = (value) => value.match(soundcloudRegex)?.pop();
-const getSpotify = (value) =>
-  value.match(spotifyRegex)?.filter((item) => item.includes("artist"))[0];
-const getAppleMusic = (value) => value.match(appleMusicRegex)?.pop();
+const getTiktok = (value) => {
+  const tikTokRegex = /http(?:s)?:\/\/(?:www\.)?tiktok\.com\/([a-zA-Z0-9_]+)/i;
+
+  return value.match(tikTokRegex)?.[0];
+};
+const getSoundcloud = (value) => {
+  const soundCloudRegex =
+    /http(?:s)?:\/\/(?:www\.)?soundcloud\.com\/([a-zA-Z0-9_-]+)/i;
+
+  return value.match(soundCloudRegex)?.[0];
+};
+const getSpotify = (value) => {
+  const spotifyRegex =
+    /https?:\/\/open\.spotify\.com\/(track|user|artist|album)\/[a-zA-Z0-9]+(\/playlist\/[a-zA-Z0-9]+|)|spotify:(track|user|artist|album):[a-zA-Z0-9]+(:playlist:[a-zA-Z0-9]+|)/gi;
+
+  return value
+    .match(spotifyRegex)
+    ?.filter((item) => item.includes("artist"))[0];
+};
+const getAppleMusic = (value) => {
+  const appleMusicRegex =
+    /https?:\/\/music\.apple\.com\/([a-zA-Z]{2})\/(album|artist|playlist|station)\/([a-zA-Z0-9_-]+)\/(\d+)/i;
+
+  return value.match(appleMusicRegex)?.[0];
+};
 
 const getSocial = (html, website) => {
   if (!html) {
@@ -201,20 +219,6 @@ const getSocial = (html, website) => {
     appleMusic,
     band_camp: bandCamp,
     link_tree: linkTree,
-  };
-};
-
-const getSocialPlusSite = (html) => {
-  const social = getSocial(html);
-  const networks = Object.keys(social).filter((item) => item);
-
-  const website = html
-    .match(urlValidRegex)
-    .filter((link) => !networks.find((network) => link.includes(network)));
-
-  return {
-    ...social,
-    website,
   };
 };
 
@@ -302,8 +306,6 @@ function getImageURL(value, baseURL) {
 
 module.exports = {
   sleep,
-  snakeCase,
-  urlValidRegex,
   validURL,
   getSocial,
   getImageFromURL,
@@ -317,7 +319,6 @@ module.exports = {
   regexEmptySpaces,
   removeHTML,
   getPrice,
-  getSocialPlusSite,
   getTime,
   removeEmptySpaces,
   getOriginFromUrl,

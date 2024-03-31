@@ -1,24 +1,34 @@
 const cheerio = require("cheerio");
 const { compareTwoStrings } = require("string-similarity");
 
-const { validURL, getGenres } = require("./misc");
+const { validURL, getGenres, sleep } = require("./misc");
 const logger = require("./logger")("musicbrainz");
 
-function isMatch(artistName, artistResult) {
-  if (!artistName || !artistResult) {
+function isMatch(preValue1, preValue2) {
+  if (!preValue1 || !preValue2) {
     return false;
   }
 
-  const result = compareTwoStrings(
-    artistName.toLowerCase(),
-    artistResult.toLowerCase()
-  );
+  const value1 = preValue1.replace(/‐/g, "-").toLowerCase();
+  const value2 = preValue2.replace(/‐/g, "-").toLowerCase();
+
+  if (value1 === value2) {
+    return true;
+  }
+
+  const result = compareTwoStrings(value1, value2);
+  if (result < 0.5) {
+    logger.info("compareTwoStrings", { result });
+  }
 
   return result >= 0.5;
 }
 
 async function getProfileFromMusicbrainz(artistName) {
-  const name = artistName.trim().replace(/ /g, "+").replace("and+", "");
+  const name = artistName
+    .trim()
+    .replace(/ /g, "+")
+    .replace("&", encodeURIComponent("&"));
   const domain = "https://musicbrainz.org";
   const url = `${domain}/search?query=${name}&type=artist&method=indexed`;
   logger.info("searching brainz", { name });
@@ -32,12 +42,18 @@ async function getProfileFromMusicbrainz(artistName) {
   const anchor = $("#content table tbody tr a").first();
 
   if (!anchor.length) {
-    logger.info("no artist results", { name });
+    logger.info("NO_RESULTS", {
+      name,
+      status: response.status,
+      html: $("#content table tbody").text()?.slice(0, 200),
+    });
     return null;
   }
 
+  // todo: check more rows, i.e. fails for B.o.B since it's on the 3rd position
   const artistResult = anchor.text();
   if (!isMatch(artistName, artistResult)) {
+    // todo: debug these cases, there might be false positives
     logger.info("NO_MATCH", { artist: artistName, result: artistResult });
     return null;
   }
@@ -64,7 +80,9 @@ async function getSocialFromProfile(profile) {
     ["soundcloud", "soundcloud-favicon"],
     ["spotify", "spotify-favicon"],
     ["youtube", "youtube-favicon"],
-    ["bandcamp", "bandcamp-favicon"],
+    ["band_camp", "bandcamp-favicon"],
+    ["appleMusic", "applemusic-favicon"],
+    ["tiktok", "tiktok-favicon"],
   ];
   return links.reduce(
     (accumulator, [social, selector]) => {
@@ -77,6 +95,11 @@ async function getSocialFromProfile(profile) {
         href = `https:${href}`;
       }
 
+      if (!validURL(href)) {
+        logger.info("INVALID_URL", { [social]: href, profile });
+        return accumulator;
+      }
+
       accumulator.metadata[social] = href;
 
       return accumulator;
@@ -86,6 +109,8 @@ async function getSocialFromProfile(profile) {
 }
 
 async function getMusicbrainz(name) {
+  await sleep();
+
   const profile = await getProfileFromMusicbrainz(name);
 
   if (!validURL(profile)) {

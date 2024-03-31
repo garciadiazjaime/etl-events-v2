@@ -1,4 +1,5 @@
 const slugify = require("slugify");
+const path = require("path");
 
 const { getDataFromWebsite, getImageFromURL } = require("./misc");
 const { getMusicbrainz } = require("./musicbrainz");
@@ -6,7 +7,7 @@ const { getArtists } = require("./mint");
 const { getSpotify } = require("./spotify");
 const { metadataProps } = require("./metadata");
 
-const logger = require("./logger")("artist");
+const logger = require("./logger")(path.basename(__filename));
 
 const getSlug = (value) => {
   const name = value
@@ -85,7 +86,7 @@ async function getArtistSingle(value) {
     profile: musicbrainz.profile,
     genres: musicbrainz.genres,
     slug,
-    metadata: mergeMetadata(musicbrainz, website),
+    metadata: mergeMetadata(musicbrainz.metadata, website),
   };
 
   if (!artist.metadata.image && artist.metadata.soundcloud) {
