@@ -64,13 +64,24 @@ async function resetEvents() {
 
   const events = await getEvents(query);
 
-  await saveToS3(events);
+  const eventsSorted = events.sort((a, b) => {
+    const popularityA =
+      a.artists.reduce((total, item) => Math.max(total, item.popularity), 0) ||
+      0;
+    const popularityB =
+      b.artists.reduce((total, item) => Math.max(total, item.popularity), 0) ||
+      0;
+
+    return popularityB - popularityA;
+  });
+
+  await saveToS3(eventsSorted);
   await createInvalidation("/public/events.json");
   await createInvalidation("/data/*");
   await triggerDeploy();
 
   logger.info(`events`, {
-    total: events.length,
+    total: eventsSorted.length,
     date: today,
   });
 }
