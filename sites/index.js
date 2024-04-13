@@ -19,6 +19,7 @@ const REGGIESLIVE = require("./reggieslive");
 const SLEEPING_VILLAGE = require("./sleepingvillage");
 const SUBTERRANEAN = require("./subt");
 const THALIA_HALL = require("./thaliahallchicago");
+const SOLDIERFIELD = require("./soldierfield");
 
 module.exports.SITE_ETL = {
   ANDYSJAZZCLUB,
@@ -42,6 +43,7 @@ module.exports.SITE_ETL = {
   SLEEPING_VILLAGE,
   SUBTERRANEAN,
   THALIA_HALL,
+  SOLDIERFIELD,
 };
 
 module.exports.SITES = [
@@ -66,4 +68,5 @@ module.exports.SITES = [
   "SLEEPING_VILLAGE",
   "SUBTERRANEAN",
   "THALIA_HALL",
+  "SOLDIERFIELD",
 ];
