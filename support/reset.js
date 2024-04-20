@@ -9,7 +9,7 @@ const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 require("dotenv").config();
 
 const { getEvents } = require("./mint");
-const logger = require("../support/logger")(path.basename(__filename));
+const logger = require("./logger")(path.basename(__filename));
 
 async function saveToS3(events) {
   const client = new S3Client({ region: "us-west-2" });
@@ -27,7 +27,7 @@ async function saveToS3(events) {
   logger.info("s3 uploaded", response);
 }
 
-async function createInvalidation(path) {
+async function createInvalidation(invalidPath) {
   const client = new CloudFrontClient({ region: "us-west-2" });
 
   const params = {
@@ -36,7 +36,7 @@ async function createInvalidation(path) {
       CallerReference: String(new Date().getTime()),
       Paths: {
         Quantity: 1,
-        Items: [path],
+        Items: [invalidPath],
       },
     },
   };
@@ -75,7 +75,10 @@ async function resetEvents() {
     return popularityB - popularityA;
   });
 
-  await saveToS3(eventsSorted);
+  await saveToS3({
+    created: new Date(),
+    events: eventsSorted,
+  });
   await createInvalidation("/public/events.json");
   await createInvalidation("/data/*");
   await triggerDeploy();
@@ -94,5 +97,5 @@ async function main() {
 
 main().then(() => {
   logger.info("reset end");
-  logger.flush;
+  logger.flush();
 });

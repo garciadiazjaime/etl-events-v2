@@ -36,7 +36,7 @@ async function getMusicOs() {
 
     fs.createReadStream(csvName)
       .pipe(parse({ delimiter: "\t", from_line: 2, relax_quotes: true }))
-      .on("data", function (row) {
+      .on("data", (row) => {
         artists.push({
           artistId: row[0],
           name: row[1],
@@ -53,10 +53,10 @@ async function getMusicOs() {
           image: row[7],
         });
       })
-      .on("error", function (err) {
+      .on("error", (err) => {
         reject(err.message);
       })
-      .on("end", function () {
+      .on("end", () => {
         resolve(artists);
       });
   });

@@ -19,7 +19,9 @@ const REGGIESLIVE = require("./reggieslive");
 const SLEEPING_VILLAGE = require("./sleepingvillage");
 const SUBTERRANEAN = require("./subt");
 const THALIA_HALL = require("./thaliahallchicago");
-const SOLDIERFIELD = require("./soldierfield");
+const SOLDIERFIELD = require("./22_soldierfield");
+const UNITEDCENTER = require("./23_unitedcenter");
+const CREDIT_UNION_1_ARENA = require("./24_creditunion1arena");
 
 module.exports.SITE_ETL = {
   ANDYSJAZZCLUB,
@@ -44,6 +46,8 @@ module.exports.SITE_ETL = {
   SUBTERRANEAN,
   THALIA_HALL,
   SOLDIERFIELD,
+  UNITEDCENTER,
+  CREDIT_UNION_1_ARENA,
 };
 
 module.exports.SITES = [
@@ -66,7 +70,9 @@ module.exports.SITES = [
   "PRYSM_CHICAGO",
   "REGGIESLIVE",
   "SLEEPING_VILLAGE",
+  "SOLDIERFIELD",
   "SUBTERRANEAN",
   "THALIA_HALL",
-  "SOLDIERFIELD",
+  "UNITEDCENTER",
+  "CREDIT_UNION_1_ARENA",
 ];

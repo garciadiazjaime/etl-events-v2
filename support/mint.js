@@ -67,7 +67,7 @@ async function saveEvent(payload) {
   }
 
   logger.info("SAVED", {
-    slug: payload.name,
+    name: payload.name,
   });
 
   return response;

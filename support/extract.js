@@ -1,12 +1,17 @@
-const logger = require("./logger")("extract");
+const path = require("path");
+
+const logger = require("./logger")(path.basename(__filename));
 
 async function extract(url, headers) {
   logger.info("scrapping", { url });
 
-  const response = await fetch(url, headers).catch(() => false);
+  const response = await fetch(url, headers).catch((error) => {
+    logger.info("error", error);
+    return false;
+  });
 
   if (!response) {
-    logger.info("fetch_failed", { url });
+    logger.info("fetch_failed");
 
     return "";
   }
@@ -26,7 +31,23 @@ async function extractJSON(url, headers) {
   return data;
 }
 
+async function extractPost(url, headers, body) {
+  logger.info("scrapping", { url });
+
+  const response = await fetch(url, { method: "POST", body, headers });
+
+  if (response.status === 400) {
+    const error = await response.text();
+    logger.info("error", { error });
+    return false;
+  }
+  const data = await response.json();
+
+  return data;
+}
+
 module.exports = {
   extract,
   extractJSON,
+  extractPost,
 };

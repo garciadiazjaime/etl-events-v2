@@ -1,48 +1,11 @@
 const cheerio = require("cheerio");
-const async = require("async");
 const moment = require("moment");
 const path = require("path");
 
-const { getGMapsLocation } = require("../support/gps");
 const { extract } = require("../support/extract");
-const { regexTime } = require("../support/misc");
-const { processEventWithArtistDetails } = require("../support/preEvents");
+const { processEventsWithArtist } = require("../support/preEvents");
 
 const logger = require("../support/logger")(path.basename(__filename));
-
-function transformEventDetails(html) {
-  const $ = cheerio.load(html);
-  const price = $(".eventCost").text().trim().match(/\d+/)?.[0];
-  const buyUrl = $(".on-sale a").attr("href");
-  const artists = $(".singleEventDescription a")
-    .toArray()
-    .map((item) => ({
-      name: $(item).text().trim(),
-      metadata: {
-        website: $(item).attr("href"),
-      },
-    }));
-
-  const details = {
-    price,
-    buyUrl,
-    artists,
-  };
-
-  return details;
-}
-
-async function getEventDetails(url) {
-  if (!url) {
-    return {};
-  }
-
-  const html = await extract(url);
-
-  const eventDetails = transformEventDetails(html);
-
-  return eventDetails;
-}
 
 const getDates = ($) => {
   if ($.find(".m-date__singleDate").length) {
@@ -82,7 +45,7 @@ function transform(html) {
 
   $(".eventItem")
     .toArray()
-    .map((item) => {
+    .forEach((item) => {
       const name = $(item).find(".title").text().trim();
       const image = $(item).find(".thumb img").attr("src");
       const url = $(item).find(".thumb a").attr("href");
@@ -93,13 +56,14 @@ function transform(html) {
         logger.info("NO_DATE");
       }
 
-      dates.map((startDate) => {
+      dates.forEach((startDate) => {
         const event = {
           name,
           image,
           url,
           start_date: startDate,
           buyUrl,
+          artists: [{ name: name.split(":")[0] }],
         };
 
         events.push(event);
@@ -115,35 +79,15 @@ async function main() {
     provider: "SOLDIERFIELD",
     city: "Chicago",
     url: "https://www.soldierfield.com/",
-    urlSource:
+    sourceURL:
       "https://www.soldierfield.com/events/events_ajax/0?category=1&venue=0&team=0&per_page=200&came_from_page=event-list-page",
   };
-  const location = await getGMapsLocation(venue);
 
-  if (!location) {
-    return;
-  }
+  const html = await extract(venue.sourceURL);
 
-  const html = await extract(venue.urlSource);
+  const preEvents = transform(html, venue);
 
-  const preEvents = transform(html);
-
-  await async.eachSeries(preEvents, async (preEvent) => {
-    const { price, buyUrl, artists } = await getEventDetails(preEvent.url);
-
-    const event = {
-      ...preEvent,
-      price,
-      buyUrl,
-      artists,
-    };
-    await processEventWithArtistDetails(venue, location, event);
-  });
-
-  logger.info("processed", {
-    total: preEvents.length,
-    provider: venue.provider,
-  });
+  await processEventsWithArtist(venue, preEvents);
 }
 
 if (require.main === module) {
