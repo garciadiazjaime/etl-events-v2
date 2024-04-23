@@ -1,11 +1,18 @@
-const CHOOSECHICAGO = require("./choosechicago");
+const CHOOSE_CHICAGO = require("./choosechicago");
 const DO312 = require("./do312");
-const SONGKICK = require("./songkick");
+const SONG_KICK = require("./songkick");
+const LIVE_NATION = require("./4_livenation");
 
 module.exports.AGGREGATORS_ETL = {
-  CHOOSECHICAGO,
+  CHOOSE_CHICAGO,
   DO312,
-  SONGKICK,
+  SONG_KICK,
+  LIVE_NATION,
 };
 
-module.exports.AGGREGATORS = ["CHOOSECHICAGO", "DO312", "SONGKICK"];
+module.exports.AGGREGATORS = [
+  "CHOOSE_CHICAGO",
+  "DO312",
+  "SONG_KICK",
+  "LIVE_NATION",
+];
