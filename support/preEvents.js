@@ -211,12 +211,14 @@ async function processEventsWithArtistWithoutLocation(preEvents, site) {
     }
 
     if (location.provider) {
+      // todo: check if events are repeated
       logger.info("PROVIDER_FOUND", {
+        event: preEvent.name,
+        date: preEvent.start_date,
         venue: location.slug,
         location: location.provider,
         provider: site.provider,
       });
-      return;
     }
 
     const { artists } = await getArtistsDetails(preEvent);
