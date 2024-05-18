@@ -1,19 +1,8 @@
 const cheerio = require("cheerio");
 const moment = require("moment");
 const { extract } = require("../support/extract");
+const { getTime, getPrice } = require("../support/misc");
 const { processEventsWithArtist } = require("../support/preEvents");
-
-const getStartDateFromDateText = (dateText) => {
-  const today = moment();
-  let startDate = moment(dateText).year(today.year());
-
-  // Assuming event is next year if today isAfter startDate
-  if (today.isAfter(startDate)) {
-    startDate.add(1, "year");
-  }
-
-  return startDate;
-};
 
 function transform(html) {
   const $ = cheerio.load(html);
@@ -27,11 +16,18 @@ function transform(html) {
       const url = $(item).find(".eventMoreInfo a").attr("href");
       const buyUrl = $(item).find(".rhp-event-cta a").attr("href");
       const description = $(item).find(".eventSubHeader").text().trim();
-      const startDateText = $(item)
+      const price = getPrice($(item).find(".eventCost").text().trim());
+      const artist = name.split("-")[0].split("–")[0].trim();
+
+      const date = $(item)
         .find(".eventDateListTop .singleEventDate")
         .text()
         .trim();
-      const startDate = getStartDateFromDateText(startDateText).toJSON();
+      const time = getTime($(item).find(".eventDoorStartDate").text().trim());
+      const startDate = moment(`${date} ${time}`, "ddd, MMM DD ha");
+      if (moment().isAfter(startDate)) {
+        startDate.add(1, "year");
+      }
 
       const event = {
         name,
@@ -40,7 +36,8 @@ function transform(html) {
         buyUrl,
         start_date: startDate,
         description,
-        artists: [{ name }],
+        price,
+        artists: [{ name: artist }],
       };
 
       events.push(event);

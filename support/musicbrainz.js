@@ -17,11 +17,11 @@ function isMatch(preValue1, preValue2) {
   }
 
   const result = compareTwoStrings(value1, value2);
-  if (result < 0.5) {
+  if (result <= 0.5) {
     logger.info("compareTwoStrings", { result });
   }
 
-  return result >= 0.5;
+  return result > 0.5;
 }
 
 async function getProfileFromMusicbrainz(artistName) {
