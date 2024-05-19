@@ -23,6 +23,7 @@ const SOLDIERFIELD = require("./22_soldierfield");
 const UNITEDCENTER = require("./23_unitedcenter");
 const CREDIT_UNION_1_ARENA = require("./24_creditunion1arena");
 const METRO_CHICAGO = require("./26_metrochicago");
+const BOTTOM_LOUNGE = require("./27_bottomlounge");
 
 module.exports.SITE_ETL = {
   ANDYSJAZZCLUB,
@@ -50,6 +51,7 @@ module.exports.SITE_ETL = {
   UNITEDCENTER,
   CREDIT_UNION_1_ARENA,
   METRO_CHICAGO,
+  BOTTOM_LOUNGE,
 };
 
 module.exports.SITES = [
@@ -78,4 +80,5 @@ module.exports.SITES = [
   "UNITEDCENTER",
   "CREDIT_UNION_1_ARENA",
   "METRO_CHICAGO",
+  "BOTTOM_LOUNGE",
 ];
