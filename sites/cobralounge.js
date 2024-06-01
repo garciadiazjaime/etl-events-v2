@@ -2,8 +2,7 @@ const { extractJSON } = require("../support/extract");
 const { processEventsWithArtist } = require("../support/preEvents");
 
 function transform(data, preEvent) {
-  const events = data.data.map((event) => {
-    return {
+  const events = data.data.map((event) => ({
       name: event.name,
       image: event.images[0],
       url: event.url,
@@ -17,8 +16,7 @@ function transform(data, preEvent) {
       provider: preEvent.provider,
       venue: preEvent.venue,
       city: preEvent.city,
-    };
-  });
+    }));
 
   return events;
 }

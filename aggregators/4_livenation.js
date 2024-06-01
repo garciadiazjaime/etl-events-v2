@@ -46,9 +46,9 @@ const getArtists = (value) => {
 function transform(data) {
   const events = [];
   data.data.getEvents.forEach((item) => {
-    const name = item.name;
+    const {name} = item;
     const image = item.images?.[0].image_url;
-    const url = item.url;
+    const {url} = item;
     const venue = item.venue?.name;
     const startDate = new Date(`${item.event_date}T${item.event_time}`);
 
