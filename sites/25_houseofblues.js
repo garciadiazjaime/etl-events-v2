@@ -1,3 +1,5 @@
+const moment = require("moment");
+
 const { extractJSON } = require("../support/extract");
 const { processEventsWithArtist } = require("../support/preEvents");
 
@@ -24,18 +26,41 @@ function transform(data) {
 }
 
 async function main() {
+  const startDate = moment().format("M/D/YYYY");
+  const endDate = moment().add(1, "month").format("M/D/YYYY");
+  const params = {
+    startDate,
+    endDate,
+    venueIds: 32905,
+    limit: 200,
+    offset: 1,
+    genre: "",
+    artist: "",
+    priceLevel: "",
+    offerType:
+      "Foundation%20Room%20Event,Foundation%20Room%20Event%20-%20Priority,Crossroads%20Music,Crossroads%20Music%20-%20Priority,STANDARD,STANDARD%20-%20Priority",
+  };
+  const searchParams = Object.entries(params).reduce(
+    (response, [key, value]) => {
+      response += `${key}=${value}&`;
+
+      return response;
+    },
+    ""
+  );
+
   const venue = {
     venue: "House of Blues Chicago",
     provider: "HOUSE_OF_BLUES",
     city: "Chicago",
-    url: "https://www.houseofblues.com/chicago/api/EventCalendar/GetEvents?startDate=4/19/2024&endDate=5/1/2024&venueIds=32905&limit=200&offset=1&genre=&artist=&priceLevel=&offerType=Foundation%20Room%20Event,Foundation%20Room%20Event%20-%20Priority,Crossroads%20Music,Crossroads%20Music%20-%20Priority,STANDARD,STANDARD%20-%20Priority",
+    url: `https://www.houseofblues.com/chicago/api/EventCalendar/GetEvents?${searchParams}`,
   };
 
   const data = await extractJSON(venue.url);
 
   const preEvents = transform(JSON.parse(data));
 
-  await processEventsWithArtist(venue, preEvents.slice(0, 1));
+  await processEventsWithArtist(venue, preEvents);
 }
 
 if (require.main === module) {
