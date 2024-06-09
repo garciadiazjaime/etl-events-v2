@@ -12,12 +12,13 @@ const { getEvents } = require("./mint");
 const logger = require("./logger")(path.basename(__filename));
 
 async function saveToS3(events) {
-  const client = new S3Client({ region: "us-west-2" });
+  const client = new S3Client({ region: "us-east-1" });
 
   const params = {
-    Bucket: "django-models-static",
+    Bucket: "cmc.data",
     Key: "public/events.json",
     Body: JSON.stringify(events),
+    ContentType: "application/json",
   };
 
   const command = new PutObjectCommand(params);
@@ -28,10 +29,10 @@ async function saveToS3(events) {
 }
 
 async function createInvalidation(invalidPath) {
-  const client = new CloudFrontClient({ region: "us-west-2" });
+  const client = new CloudFrontClient({ region: "us-east-1" });
 
   const params = {
-    DistributionId: "EOU0PLBOU18RM",
+    DistributionId: "E3MCEYJZ5K3N1E",
     InvalidationBatch: {
       CallerReference: String(new Date().getTime()),
       Paths: {
@@ -64,27 +65,16 @@ async function resetEvents() {
 
   const events = await getEvents(query);
 
-  const eventsSorted = events.sort((a, b) => {
-    const popularityA =
-      a.artists.reduce((total, item) => Math.max(total, item.popularity), 0) ||
-      0;
-    const popularityB =
-      b.artists.reduce((total, item) => Math.max(total, item.popularity), 0) ||
-      0;
-
-    return popularityB - popularityA;
-  });
-
   await saveToS3({
     created: new Date(),
-    events: eventsSorted,
+    events,
   });
   await createInvalidation("/public/events.json");
   await createInvalidation("/data/*");
   await triggerDeploy();
 
   logger.info(`events`, {
-    total: eventsSorted.length,
+    total: events.length,
     date: today,
   });
 }
