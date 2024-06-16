@@ -46,7 +46,7 @@ async function createInvalidation(invalidPath) {
 
   const response = await client.send(createInvalidationCommand);
 
-  logger.info("invalidation created", response);
+  logger.info(`invalidate`, { invalidPath, response });
 }
 
 async function triggerDeploy() {
@@ -66,7 +66,7 @@ async function resetEvents() {
   const events = await getEvents(query);
 
   await saveToS3({
-    created: new Date(),
+    created: new Date().toJSON(),
     events,
   });
   await createInvalidation("/public/events.json");

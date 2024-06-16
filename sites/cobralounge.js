@@ -3,20 +3,20 @@ const { processEventsWithArtist } = require("../support/preEvents");
 
 function transform(data, preEvent) {
   const events = data.data.map((event) => ({
-      name: event.name,
-      image: event.images[0],
-      url: event.url,
-      start_date: event.date,
-      description: event.description.replace(/\W/g, " "),
-      buyUrl: event.url,
-      price: (event.ticket_types[0]?.price.total || 0) / 100 || "",
-      artists: event.artists?.map((artistName) => ({
-        name: artistName,
-      })),
-      provider: preEvent.provider,
-      venue: preEvent.venue,
-      city: preEvent.city,
-    }));
+    name: event.name,
+    image: event.images[0],
+    url: event.url || event.external_url,
+    start_date: event.date,
+    description: event.description.replace(/\W/g, " "),
+    buyUrl: event.url || event.external_url,
+    price: (event.ticket_types[0]?.price.total || 0) / 100 || "",
+    artists: event.artists?.map((artistName) => ({
+      name: artistName,
+    })),
+    provider: preEvent.provider,
+    venue: preEvent.venue,
+    city: preEvent.city,
+  }));
 
   return events;
 }

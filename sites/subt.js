@@ -12,6 +12,10 @@ function getArtists(value) {
     return [];
   }
 
+  if (value.includes("-")) {
+    return [{ name: value.split("-")[0].trim() }];
+  }
+
   return value
     .replace("with ", "")
     .split(",")
@@ -28,7 +32,7 @@ function transformDetails($) {
   };
 }
 
-function transform(html) {
+function transform(html, venue) {
   const $ = cheerio.load(html);
 
   const events = [];
@@ -38,32 +42,41 @@ function transform(html) {
     .forEach((item) => {
       const name = $(item).find(".event-title").text().trim();
       const url = $(item).find(".event-title a").attr("href");
-      const image = $(item).find("img").attr("src");
-      // todo: save extra dates when value includes "-"
-      const date = $(item).find(".event-date").text().split("-")[0].trim();
-      const time = getTime($(item).find(".door-time").text());
-
-      const dateTime = `${date} ${time}`;
-
-      const startDate = moment(dateTime, "ddd MMM DD h:mm a");
-      if (!startDate.isValid()) {
-        logger.info("INVALID_DATE", { name, startDate });
-        return;
-      }
-
       const description = $(item).find(".doortime-showtime").text().trim();
       const buyUrl = $(item).find("a.seetickets-buy-btn").attr("href");
 
+      const image = $(item).find("img").data("src")
+        ? `${venue.url}${$(item).find("img").data("src")}`
+        : $(item).find("img").attr("src");
+
       const { artists } = transformDetails($(item));
 
-      events.push({
-        name,
-        image,
-        url,
-        start_date: startDate,
-        description,
-        buyUrl,
-        artists,
+      const startDates = [];
+      const date = $(item).find(".event-date").text().trim();
+      const time = getTime($(item).find(".door-time").text().trim());
+
+      if (date.includes("-")) {
+        date.split("-").forEach((value) => {
+          const dateTime = `${value} ${time}`;
+          const startDate = moment(dateTime, "MMM D h:mma");
+          startDates.push(startDate);
+        });
+      } else {
+        const dateTime = `${date} ${time}`;
+        const startDate = moment(dateTime, "ddd MMM D h:mma");
+        startDates.push(startDate);
+      }
+
+      startDates.forEach((startDate) => {
+        events.push({
+          name,
+          image,
+          url,
+          start_date: startDate,
+          description,
+          buyUrl,
+          artists,
+        });
       });
     });
 
@@ -80,8 +93,8 @@ async function main() {
 
   const html = await extract(venue.url);
 
-  const preEvents = transform(html);
-
+  const preEvents = transform(html, venue);
+  console.log(JSON.stringify(preEvents, null, 2));
   await processEventsWithArtist(venue, preEvents);
 }
 

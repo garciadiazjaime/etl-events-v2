@@ -16,7 +16,9 @@ function transform(html, site) {
       const name = removeEmptySpaces(
         $(item).find(".ds-listing-event-title").text().trim()
       );
-      const image = $(item).find(".ds-cover-image").attr("style").split("'")[1];
+      const image =
+        $(item).find(".ds-cover-image").attr("style").split("'")[1] ||
+        "https://variety.com/wp-content/uploads/2020/08/music-placeholder-concert-women.jpg?w=400";
       const url = `${getOriginFromUrl(site.url)}${$(item)
         .find(".ds-listing-event-title.url")
         .attr("href")}`;

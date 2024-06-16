@@ -6,6 +6,15 @@ const {
   processEventsWithoutArtistAndLocation,
 } = require("../support/preEvents");
 
+const stripEmojis = (str) =>
+  str
+    .replace(
+      /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g,
+      ""
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+
 function transform(html) {
   const $ = cheerio.load(html);
 
@@ -13,7 +22,9 @@ function transform(html) {
     .toArray()
     .map((item) => {
       const name = $(item).find(".card-title").text().trim();
-      const description = $(item).find(".card-body p").text().trim();
+      const description = stripEmojis(
+        $(item).find(".card-body p").text().trim()
+      );
       const image = encodeURI($(item).find(".img-cover").data("src"));
       const url = $(item).find(".card-img-link").attr("href");
 
@@ -62,7 +73,11 @@ async function etl(url, site) {
 
   const html = await extract(url);
 
-  const preEvents = transform(html, site);
+  const preEvents = transform(html, site).filter(
+    (item) =>
+      item.url ===
+      "https://www.choosechicago.com/event/drag-brunch-at-virgin-hotels-chicago/2024-06-15/"
+  );
 
   await processEventsWithoutArtistAndLocation(preEvents, site);
 }

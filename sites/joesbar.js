@@ -1,9 +1,11 @@
 const cheerio = require("cheerio");
 const moment = require("moment");
+const path = require("path");
 
 const { extract } = require("../support/extract");
 const { getPrice } = require("../support/misc");
 const { processEventsWithArtist } = require("../support/preEvents");
+const logger = require("../support/logger")(path.basename(__filename));
 
 function getArtist(name) {
   const artist = { name };
@@ -17,9 +19,11 @@ function getArtist(name) {
 function transform(html, venue) {
   const $ = cheerio.load(html);
 
-  const events = $(".featured-box")
+  const events = [];
+
+  $(".featured-box")
     .toArray()
-    .map((item) => {
+    .forEach((item) => {
       const name = $(item)
         .find(".featured-box-title span")
         .first()
@@ -47,7 +51,12 @@ function transform(html, venue) {
         artists: [mainArtist],
       };
 
-      return event;
+      if (!event.url) {
+        logger.info("EMPTY_URL", event);
+        return;
+      }
+
+      events.push(event);
     });
 
   return events;

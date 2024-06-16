@@ -1,18 +1,21 @@
 const moment = require("moment");
 const cheerio = require("cheerio");
+const path = require("path");
 
 const { extract } = require("../support/extract");
 const { getOriginFromUrl } = require("../support/misc");
 const {
   processEventsWithArtistWithoutLocation,
 } = require("../support/preEvents");
+const logger = require("../support/logger")(path.basename(__filename));
 
 function transform(html, site) {
   const $ = cheerio.load(html);
 
-  const events = $(".event-listings-element")
+  const events = [];
+  $(".event-listings-element")
     .toArray()
-    .map((item) => {
+    .forEach((item) => {
       const name = $(item).find(".artists strong").text();
       const image = `https:${$(item)
         .find(".artist-profile-image")
@@ -30,7 +33,7 @@ function transform(html, site) {
         name: value.trim(),
       }));
 
-      return {
+      const event = {
         name,
         image,
         url,
@@ -38,6 +41,13 @@ function transform(html, site) {
         venue,
         artists,
       };
+
+      if (!event.venue) {
+        logger.info("EMPTY_VENUE", event);
+        return;
+      }
+
+      events.push(event);
     });
 
   return events;

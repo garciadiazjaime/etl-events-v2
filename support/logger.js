@@ -7,8 +7,8 @@ const logtail = new Logtail(process.env.LOGTAIL_TOKEN);
 function logger(reference) {
   return {
     info: (msg, payload) => {
-      console.log(`${reference}:`, msg, payload);
-      logtail.info(`${reference}:${msg}`, payload);
+      console.log(reference, msg, payload);
+      logtail.info(reference, { msg, payload });
     },
     error: (msg, payload) => {
       console.log(`ERROR:${reference}`, msg, payload);

@@ -49,21 +49,32 @@ async function saveEvent(payload) {
     body: JSON.stringify(payload),
   });
 
-  if (response.status > 201) {
-    logger.info("payload", JSON.stringify(payload, null, 2));
+  if (response.status >= 400) {
+    await response
+      .text()
+      .then((error) => {
+        const message =
+          response.status >= 500
+            ? error.match(/exception_value(.)+<\/pre>/)?.[0]
+            : error;
 
-    if (response.status === 500) {
-      logger.error("SERVER_ERROR", {
-        message: response.statusText,
+        logger.error("SERVER_ERROR", {
+          status: response.status,
+          text: response.statusText,
+          payload,
+          message,
+        });
+      })
+      .catch((error) => {
+        logger.error("SERVER_ERROR_TEXT", {
+          status: response.status,
+          text: response.statusText,
+          payload,
+          error,
+        });
       });
 
-      return null;
-    }
-
-    const data = await response.json();
-    logger.error("ERROR_SAVING_EVENT", JSON.stringify(data, null, 2));
-
-    return null;
+    return;
   }
 
   logger.info("SAVED", {

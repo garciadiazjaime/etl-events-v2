@@ -32,16 +32,16 @@ function transform(data, preEvent) {
 
 async function main() {
   // todo: vivenu.com seems like a good reference for live music events
+
   const venue = {
     venue: "City Winery",
     provider: "CITY_WINERY",
     city: "Chicago",
     url: "https://citywinery.com",
+    source: `https://vivenu.com/api/events/public/listings?sellerId=64d2a7b3db682dbe2baf69d8&top=20&skip=0&visibleInListing=true&endMin=${new Date().toJSON()}`,
   };
 
-  const data = await extractJSON(
-    "https://vivenu.com/api/events/public/listings?sellerId=64d2a7b3db682dbe2baf69d8&top=1000&visibleInListing=true&endMin=2024-02-11T04%3A00%3A00.000Z",
-  );
+  const data = await extractJSON(venue.source);
 
   const preEvents = transform(data, venue);
 
