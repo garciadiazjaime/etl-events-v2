@@ -36,11 +36,12 @@ async function extractPost(url, headers, body) {
 
   const response = await fetch(url, { method: "POST", body, headers });
 
-  if (response.status === 400) {
+  if (response.status >= 400) {
     const error = await response.text();
-    logger.info("error", { error });
+    logger.error("SOURCE_FAILED", { error, url });
     return false;
   }
+
   const data = await response.json();
 
   return data;

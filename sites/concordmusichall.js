@@ -67,7 +67,7 @@ function transformDetails(html) {
         }))) ||
     [];
 
-  const buyUrl = $("#main a.btn").first().attr("href");
+  const buyUrl = $("#main a.btn").first().attr("href").trim().replace(/ /g, "");
 
   return { artists: [mainArtist, ...extraArtists], buyUrl };
 }

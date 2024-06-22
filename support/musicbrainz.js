@@ -25,6 +25,8 @@ function isMatch(preValue1, preValue2) {
 }
 
 async function getProfileFromMusicbrainz(artistName) {
+  await sleep(100);
+
   const name = artistName
     .trim()
     .replace(/ /g, "+")

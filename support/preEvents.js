@@ -134,7 +134,7 @@ async function processEventWithArtist(venue, location, preEvent) {
 async function processEventsWithoutArtist(venue, preEvents) {
   const location = await getGMapsLocation(venue);
 
-  if (!location) {
+  if (!location || !preEvents) {
     return;
   }
 
@@ -176,6 +176,7 @@ async function processEventsWithoutArtistAndLocation(preEvents, site) {
         location: location.provider,
         provider: site.provider,
       });
+
       return;
     }
 
@@ -219,6 +220,8 @@ async function processEventsWithArtistWithoutLocation(preEvents, site) {
         location: location.provider,
         provider: site.provider,
       });
+
+      return;
     }
 
     const { artists } = await getArtistsDetails(preEvent);

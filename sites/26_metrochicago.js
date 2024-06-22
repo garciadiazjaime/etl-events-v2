@@ -14,7 +14,11 @@ function transform(html) {
       const name = $(item).find(".eventTitleDiv").text().trim();
       const image = $(item).find(".rhp-events-event-image img").attr("src");
       const url = $(item).find(".eventMoreInfo a").attr("href");
-      const buyUrl = $(item).find(".rhp-event-cta a").attr("href");
+      const buyUrl = $(item)
+        .find(".rhp-event-cta a")
+        .attr("href")
+        .trim()
+        .replace(/ /g, "");
       const description = $(item).find(".eventSubHeader").text().trim();
       const price = getPrice($(item).find(".eventCost").text().trim());
       const artist = name.split("-")[0].split("–")[0].trim();
