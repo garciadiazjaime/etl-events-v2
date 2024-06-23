@@ -6,7 +6,7 @@ async function extract(url, headers) {
   logger.info("scrapping", { url });
 
   const response = await fetch(url, headers).catch((error) => {
-    logger.info("error", error);
+    logger.error("FETCH_FAILED", { error, url });
     return false;
   });
 

@@ -94,7 +94,7 @@ async function main() {
   const html = await extract(venue.url);
 
   const preEvents = transform(html, venue);
-  console.log(JSON.stringify(preEvents, null, 2));
+
   await processEventsWithArtist(venue, preEvents);
 }
 
