@@ -1,54 +1,61 @@
-// const moment = require("moment");
-// const puppeteer = require("puppeteer");
+// todo: does not work from server, running locally
 
-// const { extractPost } = require("../support/extract");
-// const { processEventsWithoutArtist } = require("../support/preEvents");
+const moment = require("moment");
+const puppeteer = require("puppeteer");
 
-// function secondsToHHMM(value) {
-//   const d = Number(value);
-//   const h = Math.floor(d / 3600);
-//   const m = Math.floor((d % 3600) / 60);
+const { processEventsWithoutArtist } = require("../support/preEvents");
+const logger = require("../support/logger");
 
-//   const hDisplay = `${h}:`;
-//   const mDisplay = m > 0 ? m : "";
-//   return hDisplay + mDisplay;
-// }
+function secondsToHHMM(value) {
+  const d = Number(value);
+  const h = Math.floor(d / 3600);
+  const m = Math.floor((d % 3600) / 60);
 
-// function transform(data) {
-//   const events = data?.data?.customPageSection?.upcomingCalendarEvents.map(
-//     (item) => {
-//       const { name } = item;
-//       const description = item.description || item.eventTimeDescription;
-//       const image = item.photoUrl;
-//       const url = `https://www.cubbybear.com/events/${item.slug}`;
-//       const buyUrl = item.externalLinkUrl ? item.externalLinkUrl : undefined;
-//       const price = undefined;
+  const hDisplay = `${h}:`;
+  const mDisplay = m > 0 ? m : "";
+  return hDisplay + mDisplay;
+}
 
-//       const date = item.startAt;
-//       const time = secondsToHHMM(item.startTime);
-//       const dateTime = `${date} ${time}`;
-//       const startDate = moment(dateTime, "YYYY-MM-DD h:mm");
+function transform(data) {
+  const events = data?.data?.customPageSection?.upcomingCalendarEvents.map(
+    (item) => {
+      const { name } = item;
+      const description = item.description || item.eventTimeDescription;
+      const image = item.photoUrl;
+      const url = `https://www.cubbybear.com/events/${item.slug}`;
+      const buyUrl = item.externalLinkUrl ? item.externalLinkUrl : undefined;
+      const price = undefined;
 
-//       const artists = undefined;
+      const date = item.startAt;
+      const time = secondsToHHMM(item.startTime);
+      const dateTime = `${date} ${time}`;
+      const startDate = moment(dateTime, "YYYY-MM-DD h:mm");
 
-//       return {
-//         name,
-//         description,
-//         image,
-//         url,
-//         buyUrl,
-//         price,
-//         start_date: startDate,
-//         artists,
-//       };
-//     }
-//   );
+      const artists = undefined;
 
-//   return events;
-// }
+      return {
+        name,
+        description,
+        image,
+        url,
+        buyUrl,
+        price,
+        start_date: startDate,
+        artists,
+      };
+    }
+  );
+
+  return events;
+}
 
 const extract = async (venue) => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    headless: "new",
+    defaultViewport: null,
+    ignoreHTTPSErrors: true,
+  });
   const page = await browser.newPage();
 
   const customUA =
@@ -57,17 +64,52 @@ const extract = async (venue) => {
   // Set custom user agent
   await page.setUserAgent(customUA);
 
-  // Navigate the page to a URL.
+  let wasCalled = false;
+
+  await page.setRequestInterception(true);
+
+  const interceptRequestHandler = async (request) => {
+    try {
+      if (wasCalled) {
+        return await request.continue();
+      }
+      wasCalled = true;
+
+      const requestParams = {
+        method: "POST",
+        postData: JSON.stringify({
+          variables: {
+            rangeStartAt: new Date().toJSON(),
+            limit: 60,
+            sectionId: 2673661,
+          },
+          extensions: {
+            operationId: "PopmenuClient/93cabb8b40d7337158b20b4383348530",
+          },
+        }),
+        headers: {
+          "content-type": "application/json",
+          Referer: "https://www.cubbybear.com/live-music",
+        },
+      };
+
+      await request.continue(requestParams);
+    } catch (error) {
+      logger.error(error);
+    }
+  };
+
+  await page.on("request", interceptRequestHandler);
+
   await page.goto(venue.url, { waitUntil: "networkidle0" });
 
-  await page.screenshot({
-    path: "data/screenshot-01.jpg",
+  const innerText = await page.evaluate(() => {
+    return JSON.parse(document.querySelector("body").innerText);
   });
 
-  const html = await page.content();
-  console.log(html);
-
   await browser.close();
+
+  return innerText;
 };
 
 async function main() {
@@ -75,33 +117,15 @@ async function main() {
     venue: "The Cubby Bear Chicago",
     provider: "CUBBY_BEAR_CHICAGO",
     city: "Chicago",
-    url: "https://www.cubbybear.com/",
+    url: "https://www.cubbybear.com/graphql",
   };
 
-  // // todo: request might by blocked
-  // const headers = {
-  //   "content-type": "application/json",
-  //   Referer: "https://www.cubbybear.com/live-music",
-  // };
-  // const payload = JSON.stringify({
-  //   variables: {
-  //     rangeStartAt: new Date().toJSON(),
-  //     limit: 60,
-  //     sectionId: 2673661,
-  //   },
-  //   extensions: {
-  //     operationId: "PopmenuClient/93cabb8b40d7337158b20b4383348530",
-  //   },
-  // });
-  // console.log({ headers, payload });
-
-  // const html = await extractPost(venue.url, headers, payload);
   const data = await extract(venue);
 
-  // const preEvents = transform(data);
-  // console.log(preEvents);
+  const preEvents = transform(data);
+  console.log(preEvents);
 
-  // await processEventsWithoutArtist(venue, preEvents);
+  await processEventsWithoutArtist(venue, preEvents);
 }
 
 if (require.main === module) {

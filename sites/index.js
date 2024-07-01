@@ -12,7 +12,6 @@ const COBRALOUNGE = require("./cobralounge");
 const COLESBAR = require("./colesbarchicago");
 const CONCORD_MUSIC_HALL = require("./concordmusichall");
 const CHICAGO_SYMPHONY_ORCHESTRA = require("./cso");
-const CUBBY_BEAR_CHICAGO = require("./cubbybear");
 const EMPTY_BOTTLE = require("./emptybottle");
 const EVANSTON_SPACE = require("./evanstonspace");
 const FITZGERALDS = require("./fitzgeraldsnightclub");
@@ -42,7 +41,6 @@ module.exports.SITE_ETL = {
   COLESBAR,
   CONCORD_MUSIC_HALL,
   CHICAGO_SYMPHONY_ORCHESTRA,
-  CUBBY_BEAR_CHICAGO,
   EMPTY_BOTTLE,
   EVANSTON_SPACE,
   FITZGERALDS,
@@ -66,7 +64,6 @@ module.exports.SITES = [
   "COLESBAR",
   "CONCORD_MUSIC_HALL",
   "CHICAGO_SYMPHONY_ORCHESTRA",
-  "CUBBY_BEAR_CHICAGO",
   "EMPTY_BOTTLE",
   "EVANSTON_SPACE",
   "FITZGERALDS",
