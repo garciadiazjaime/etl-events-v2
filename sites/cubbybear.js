@@ -2,9 +2,10 @@
 
 const moment = require("moment");
 const puppeteer = require("puppeteer");
+const path = require("path");
 
 const { processEventsWithoutArtist } = require("../support/preEvents");
-const logger = require("../support/logger");
+const logger = require("../support/logger")(path.basename(__filename));
 
 function secondsToHHMM(value) {
   const d = Number(value);
@@ -16,15 +17,24 @@ function secondsToHHMM(value) {
   return hDisplay + mDisplay;
 }
 
-function transform(data) {
+function transform(data, venue) {
   const events = data?.data?.customPageSection?.upcomingCalendarEvents.map(
     (item) => {
       const { name } = item;
       const description = item.description || item.eventTimeDescription;
       const image = item.photoUrl;
       const url = `https://www.cubbybear.com/events/${item.slug}`;
-      const buyUrl = item.externalLinkUrl ? item.externalLinkUrl : undefined;
+      const buyUrl = item.externalLinkUrl
+        ? item.externalLinkUrl.slice(0, 200)
+        : undefined;
       const price = undefined;
+
+      if (item.externalLinkUrl?.length > 200) {
+        logger.info("LONG_BUY_URL", {
+          buyUrl: item.externalLinkUrl,
+          provider: venue.provider,
+        });
+      }
 
       const date = item.startAt;
       const time = secondsToHHMM(item.startTime);
@@ -122,8 +132,7 @@ async function main() {
 
   const data = await extract(venue);
 
-  const preEvents = transform(data);
-  console.log(preEvents);
+  const preEvents = transform(data, venue);
 
   await processEventsWithoutArtist(venue, preEvents);
 }

@@ -11,7 +11,9 @@ async function getArtistsDetails(event) {
   const response = { artists: [] };
 
   await async.eachSeries(event.artists, async (preArtist) => {
-    const artist = await getArtistSingle(preArtist.name);
+    const artist = await getArtistSingle(preArtist.name).catch((error) => {
+      logger.error("getArtistSingleError", { error, preArtist });
+    });
 
     if (artist) {
       response.artists.push(artist);
