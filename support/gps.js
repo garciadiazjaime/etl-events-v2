@@ -117,7 +117,7 @@ async function getGMapsLocation(venue, checkWebsite = true) {
     return null;
   }
 
-  const locationMetadata = await getMetadata(location.website);
+  const locationMetadata = await getMetadata(location.website, venue);
   location.metadata = locationMetadata;
 
   if (checkWebsite && venue.url) {

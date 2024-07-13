@@ -90,7 +90,7 @@ const getArtistDetails = async (token, id) => {
 
   const data = await response.json();
   if (response.status > 200) {
-    logger.info("INVALID_ARTIST:", {
+    logger.error("INVALID_ARTIST:", {
       token,
       id,
       data,
@@ -122,7 +122,10 @@ async function getSpotify(artist) {
   });
 
   const token = await getToken();
-  const id = artist.metadata.spotify.split("/").pop();
+
+  const id = artist.metadata.spotify.includes("spotify:artist")
+    ? artist.metadata.spotify.split(":").pop()
+    : artist.metadata.spotify.split("/").pop();
   const details = await getArtistDetails(token, id);
 
   if (!details) {

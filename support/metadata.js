@@ -21,7 +21,7 @@ const metadataProps = [
   "link_tree",
 ];
 
-async function getMetadata(url) {
+async function getMetadata(url, venue) {
   logger.info("scrapping", { url });
 
   if (
@@ -36,7 +36,7 @@ async function getMetadata(url) {
 
   const response = await fetch(url).catch(() => false);
   if (!response) {
-    logger.info("error", { url });
+    logger.info("error", { url, venue });
     return {};
   }
 

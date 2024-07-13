@@ -15,6 +15,9 @@ const sleep = async (ms = 1_000) => {
   });
 };
 
+const defaultImage =
+  "https://variety.com/wp-content/uploads/2020/08/music-placeholder-concert-women.jpg?w=400";
+
 const regexTime =
   /((1[0-2]|0?[1-9]):([0-5][0-9])\s?([AaPp][Mm]))|(1[0-2]|0?[1-9])([AaPp][Mm])/;
 const regexMoney = /\$(\d+)/;
@@ -323,4 +326,5 @@ module.exports = {
   removeEmptySpaces,
   getOriginFromUrl,
   getImageURL,
+  defaultImage,
 };

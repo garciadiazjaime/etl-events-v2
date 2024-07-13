@@ -7,14 +7,8 @@ async function extract(url, headers) {
 
   const response = await fetch(url, headers).catch((error) => {
     logger.error("FETCH_FAILED", { error, url });
-    return false;
+    throw error;
   });
-
-  if (!response) {
-    logger.info("fetch_failed");
-
-    return "";
-  }
 
   const html = await response.text();
 

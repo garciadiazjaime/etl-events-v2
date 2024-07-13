@@ -12,7 +12,7 @@ async function getArtistsDetails(event) {
 
   await async.eachSeries(event.artists, async (preArtist) => {
     const artist = await getArtistSingle(preArtist.name).catch((error) => {
-      logger.error("getArtistSingleError", { error, preArtist });
+      logger.error("getArtistSingle", { error, preArtist, event });
     });
 
     if (artist) {

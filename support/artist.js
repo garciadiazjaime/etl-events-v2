@@ -101,8 +101,10 @@ async function getArtistSingle(value) {
   }
 
   const spotify = await getSpotify(artist);
+
   if (spotify) {
     artist.spotify = spotify;
+    artist.metadata.spotify = spotify.url;
   }
 
   return artist;
