@@ -266,8 +266,8 @@ const getGenres = (html) => {
 };
 
 const getSocialNetworkFrom = (url) => {
-  if (!url) {
-    return null;
+  if (!validURL(url)) {
+    return {};
   }
 
   const socialNetworks = [

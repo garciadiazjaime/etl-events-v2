@@ -123,7 +123,7 @@ async function getDetails(url) {
   };
 
   await async.eachSeries(details.artists, async (preArtist) => {
-    const artistSingle = await getArtistSingle(preArtist.name);
+    const artistSingle = await getArtistSingle(preArtist.name).catch(() => {});
 
     if (!artistSingle) {
       logger.info("ARTIST_UNKNOWN", preArtist);
