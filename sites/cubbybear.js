@@ -61,6 +61,7 @@ function transform(data, venue) {
 
 const extract = async (venue) => {
   const browser = await puppeteer.launch({
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
     headless: "new",
     defaultViewport: null,
