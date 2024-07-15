@@ -159,12 +159,6 @@ async function etlDetails() {
 }
 
 async function main() {
-  const debug = false;
-  if (debug) {
-    await etlDetails();
-    return;
-  }
-
   await etl();
 }
 
