@@ -4,6 +4,8 @@ const { compareTwoStrings } = require("string-similarity");
 const { validURL, getGenres, sleep } = require("./misc");
 const logger = require("./logger")("musicbrainz");
 
+const MATCH_THRESHOLD = 0.65;
+
 function isMatch(preValue1, preValue2) {
   if (!preValue1 || !preValue2) {
     return false;
@@ -17,11 +19,11 @@ function isMatch(preValue1, preValue2) {
   }
 
   const result = compareTwoStrings(value1, value2);
-  if (result <= 0.5) {
-    logger.info("compareTwoStrings", { result });
+  if (result <= MATCH_THRESHOLD) {
+    logger.info("compareTwoStrings", { result, MATCH_THRESHOLD });
   }
 
-  return result > 0.5;
+  return result > MATCH_THRESHOLD;
 }
 
 async function getProfileFromMusicbrainz(artistName) {

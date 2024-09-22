@@ -35,9 +35,10 @@ function transform(html) {
 
       const date = $(item).find(".tw-event-date").text().trim();
       const time = getTime($(item).find(".tw-event-time").text().trim());
-      const startDate = moment(`${date} ${time}`, "MMM DD h a");
-      if (moment().isAfter(startDate)) {
-        startDate.add(1, "year");
+      let startDate = moment(`${date} ${time}`, "MMM DD h:mm a");
+      if (!startDate.isValid()) {
+        const nextYear = moment().add(1, "year").year();
+        startDate = moment(`${nextYear} ${date} ${time}`, "YYYY MMM DD h:mm a");
       }
 
       const artists = getArtists(name);

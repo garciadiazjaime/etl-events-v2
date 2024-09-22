@@ -20,10 +20,10 @@ const getDates = ($, currentMonth) => {
     const startDate = moment(`${date} ${time}`, "MMMD h:mm a");
 
     if (startDate.month() < currentMonth) {
-      startDate.add(1, "years");
+      startDate.add(1, "year");
     }
 
-    return [startDate.toJSON()];
+    return [startDate];
   }
 
   if ($.find(".dateIcon").length === 2) {
@@ -44,11 +44,11 @@ const getDates = ($, currentMonth) => {
     const dates = [];
     while (startDate <= lastDate) {
       if (startDate.month() < currentMonth) {
-        startDate.add(1, "years");
+        startDate.add(1, "year");
       }
 
-      dates.push(startDate.toJSON());
-      startDate.add(1, "days");
+      dates.push(moment(startDate.toJSON()));
+      startDate.add(1, "day");
     }
 
     return dates;

@@ -40,9 +40,16 @@ function getArtist($) {
 function transform(html) {
   const $ = cheerio.load(html);
 
-  const events = $("#eventsList .entry")
+  const events = [];
+
+  $("#eventsList .entry")
     .toArray()
     .map((item) => {
+      const date = $(item).find(".date").text().trim();
+      if (date === "TBD") {
+        return;
+      }
+
       const name = $(item).find("h3").text().trim();
       const description = removeEmptySpaces(
         $(item).find(".time").text().trim()
@@ -52,14 +59,13 @@ function transform(html) {
       const buyUrl = $(item).find(".btn-tickets").attr("href");
       const price = undefined;
 
-      const date = $(item).find(".date").text().trim();
       const time = getTime($(item).find(".time").text());
       const dateTime = `${date} ${time}`;
       const startDate = moment(dateTime, "ddd, MMM DD, YYYY h:mma");
 
       const artists = getArtist($(item));
 
-      return {
+      events.push({
         name,
         description,
         image,
@@ -68,7 +74,7 @@ function transform(html) {
         price,
         start_date: startDate,
         artists,
-      };
+      });
     });
 
   return events;

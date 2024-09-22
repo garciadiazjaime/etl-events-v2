@@ -28,9 +28,13 @@ function transform(html) {
         .text()
         .trim();
       const time = getTime($(item).find(".eventDoorStartDate").text().trim());
-      const startDate = moment(`${date} ${time}`, "ddd, MMM DD ha");
-      if (moment().isAfter(startDate)) {
-        startDate.add(1, "year");
+      let startDate = moment(`${date} ${time}`, "ddd, MMM DD h:mma");
+      if (!startDate.isValid()) {
+        const nextYear = moment().add(1, "year").year();
+        startDate = moment(
+          `${nextYear} ${date} ${time}`,
+          "YYYY ddd, MMM DD h:mma"
+        );
       }
 
       const event = {

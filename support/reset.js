@@ -63,7 +63,20 @@ async function resetEvents() {
 
   const query = `location_empty=false&start_date=${today}&end_date=${nextWeek}&ordering=-rank&limit=700`;
 
-  const events = await getEvents(query);
+  const results = await getEvents(query);
+
+  const duplicate = {};
+  const events = results.reduce((accumulator, event) => {
+    const key = `${event.start_date}_${event.slug}`;
+    if (!duplicate[key]) {
+      duplicate[key] = true;
+      accumulator.push(event);
+    } else {
+      logger.info("DUPLICATE_EVENT", { slug: event.slug });
+    }
+
+    return accumulator;
+  }, []);
 
   await saveToS3({
     created: new Date().toJSON(),

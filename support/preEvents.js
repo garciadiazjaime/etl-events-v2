@@ -96,7 +96,9 @@ async function processEventWithArtistDetails(venue, location, preEvent) {
   const artists = [];
 
   await async.eachSeries(preEvent.artists, async (preArtist) => {
-    const artistSingle = await getArtistSingle(preArtist.name).catch(() => {});
+    const artistSingle = await getArtistSingle(preArtist.name).catch(() => {
+      logger.error("ARTIST_UNKNOWN", { venue, location, preEvent, preArtist });
+    });
     if (!artistSingle) {
       logger.info("ARTIST_UNKNOWN", preArtist);
       return;
