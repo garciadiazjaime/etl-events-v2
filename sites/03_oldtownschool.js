@@ -43,7 +43,6 @@ function transform(html, venue) {
 }
 
 async function main() {
-  // todo: this sites provides little information, not sure worth the scrapper
   const venue = {
     venue: "Old Town School of Folk Music - Lincoln Square",
     provider: "OLD_TOWN_SCHOOL_FOLK_MUSIC_LINCOLN_SQUARE",

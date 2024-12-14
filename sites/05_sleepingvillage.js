@@ -1,12 +1,13 @@
-const moment = require("moment");
-
 const { extractJSON } = require("../support/extract");
 const { processEventsWithArtist } = require("../support/preEvents");
-const { removeHTML, getPrice } = require("../support/misc");
+const { removeHTML, getPrice, getStartDate } = require("../support/misc");
 
 function transform(data) {
   const events = data.map((event) => {
-    const startDate = moment(removeHTML(event.dateTime), "ddd, MMM DD h:mma");
+    const startDate = getStartDate(
+      removeHTML(event.dateTime),
+      "ddd, MMM DD h:mma"
+    );
 
     return {
       name: event.title,

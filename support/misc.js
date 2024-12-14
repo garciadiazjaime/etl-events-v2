@@ -1,3 +1,4 @@
+const moment = require("moment");
 const cheerio = require("cheerio");
 const path = require("path");
 
@@ -307,6 +308,17 @@ function getImageURL(value, baseURL) {
   return `${baseURL}${value}`;
 }
 
+const getStartDate = (value, format) => {
+  const startDate = moment(value, format);
+
+  if (startDate.isValid()) {
+    return startDate;
+  }
+
+  const nextYear = moment().add(1, "year").year();
+  return moment(`${nextYear} ${value}`, `YYYY ${format}`);
+};
+
 module.exports = {
   sleep,
   validURL,
@@ -327,4 +339,5 @@ module.exports = {
   getOriginFromUrl,
   getImageURL,
   defaultImage,
+  getStartDate,
 };

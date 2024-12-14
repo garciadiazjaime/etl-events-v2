@@ -25,7 +25,9 @@ async function getEvent(id) {
 }
 
 async function getLocations(query) {
-  const response = await fetch(`${EVENTS_API}/locations/?${query}`);
+  const url = `${EVENTS_API}/locations/?${query}`;
+  logger.info("get locations", { url });
+  const response = await fetch(url);
 
   const data = await response.json();
 
