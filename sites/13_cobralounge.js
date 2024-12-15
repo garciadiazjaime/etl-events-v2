@@ -1,6 +1,8 @@
 const { extractJSON } = require("../support/extract");
 const { processEventsWithArtist } = require("../support/preEvents");
 
+require("dotenv").config();
+
 function transform(data, preEvent) {
   const events = data.data.map((event) => ({
     name: event.name,
@@ -34,7 +36,7 @@ async function main() {
     "https://events-api.dice.fm/v1/events?page[size]=24&types=linkout,event&filter[venues][]=Cobra%20Lounge",
     {
       headers: {
-        "X-Api-Key": "8JMzxF43og372h6gQI9Bg3SO8ehBJnDa3ACPE3Gp",
+        "X-Api-Key": process.env.COBRA_LOUNGE_API_KEY,
       },
     }
   );
