@@ -1,11 +1,8 @@
 const cheerio = require("cheerio");
-const moment = require("moment");
-const path = require("path");
 
 const { extract } = require("../support/extract");
 const { processEventsWithArtist } = require("../support/preEvents");
-const { getTime } = require("../support/misc");
-const logger = require("../support/logger")(path.basename(__filename));
+const { getTime, getStartDate } = require("../support/misc");
 
 function getArtists(value) {
   if (!value || value.includes(":")) {
@@ -58,12 +55,12 @@ function transform(html, venue) {
       if (date.includes("-")) {
         date.split("-").forEach((value) => {
           const dateTime = `${value} ${time}`;
-          const startDate = moment(dateTime, "MMM D h:mma");
+          const startDate = getStartDate(dateTime, "MMM D h:mma");
           startDates.push(startDate);
         });
       } else {
         const dateTime = `${date} ${time}`;
-        const startDate = moment(dateTime, "ddd MMM D h:mma");
+        const startDate = getStartDate(dateTime, "ddd MMM D h:mma");
         startDates.push(startDate);
       }
 

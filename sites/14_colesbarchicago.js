@@ -8,6 +8,7 @@ const {
   regexMoney,
   regexEmptySpaces,
   defaultImage,
+  getStartDate,
 } = require("../support/misc");
 const { validURL } = require("../support/misc");
 const { getGMapsLocation } = require("../support/gps");
@@ -41,7 +42,7 @@ function transform(html) {
         .trim()
         .match(regexTime)?.[0];
 
-      const startDate = moment(`${date} ${time}`, "ddd, MMM DD h:mma");
+      const startDate = getStartDate(`${date} ${time}`, "ddd, MMM DD h:mma");
 
       const artists = name.split(",").map((name) => ({ name }));
 
