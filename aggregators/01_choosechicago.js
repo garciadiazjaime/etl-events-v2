@@ -73,11 +73,7 @@ async function etl(url, site) {
 
   const html = await extract(url);
 
-  const preEvents = transform(html, site).filter(
-    (item) =>
-      item.url ===
-      "https://www.choosechicago.com/event/drag-brunch-at-virgin-hotels-chicago/2024-06-15/"
-  );
+  const preEvents = transform(html, site);
 
   await processEventsWithoutArtistAndLocation(preEvents, site);
 }

@@ -68,9 +68,7 @@ async function etl(url, site, index = 0) {
 
   const html = await extract(url);
 
-  const preEvents = transform(html, site).filter(
-    (item) => item.venue === "Cobra Lounge"
-  );
+  const preEvents = transform(html, site);
 
   await processEventsWithArtistWithoutLocation(preEvents, site);
 
