@@ -3,6 +3,8 @@ const {
   processEventsWithArtistWithoutLocation,
 } = require("../support/preEvents");
 
+require("dotenv").config();
+
 const getArtists = (value) => {
   const separators = [" with ", " and ", ":", "&", "-"];
   const response = [];
@@ -46,9 +48,9 @@ const getArtists = (value) => {
 function transform(data) {
   const events = [];
   data.data.getEvents.forEach((item) => {
-    const {name} = item;
+    const { name } = item;
     const image = item.images?.[0].image_url;
-    const {url} = item;
+    const { url } = item;
     const venue = item.venue?.name;
     const startDate = new Date(`${item.event_date}T${item.event_time}`);
 
@@ -70,7 +72,7 @@ function transform(data) {
 async function etl(site) {
   // todo: this API could expired
   const headers = {
-    "x-api-key": "da2-jmvb5y2gjfcrrep3wzeumqwgaq",
+    "x-api-key": process.env.LIVE_NATION_API_KEY,
   };
   const body = JSON.stringify({
     query:
