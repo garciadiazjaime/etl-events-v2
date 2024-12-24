@@ -25,6 +25,9 @@ function transform(html, site) {
         .attr("href")}`;
       const venue = $(item).find(".venue-link").text();
       const timestamp = $(item).find("time").attr("datetime");
+      if (!timestamp.includes("T")) {
+        return;
+      }
       const startDate = moment(timestamp).format();
 
       const artists = (
