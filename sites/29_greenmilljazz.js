@@ -28,6 +28,10 @@ function transform(html) {
       const nameCleaned = name.replace(timeRegex, "").trim();
       const url = $(eventElement).attr("href");
       const time = getTime(name);
+      if (!time) {
+        return;
+      }
+
       const startDate = moment(`${date} ${time}`, "dddd, MMMM D ha");
       const nextYear = moment().add(1, "year").year();
       const startDateAdjusted = startDate.isValid()
@@ -61,8 +65,9 @@ async function main() {
 
   const html = await extract(venue.url);
 
-  const preEvents = transform(html);
-  console.log(preEvents);
+  const preEvents = transform(html).filter(
+    (event) => !event.name.includes("CLOSED")
+  );
 
   await processEventsWithArtist(venue, preEvents);
 }

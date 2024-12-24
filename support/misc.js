@@ -76,10 +76,14 @@ const getFacebook = (value) => {
 
   if (
     [
+      "http://www.facebook.com/pages",
       "https://www.facebook.com/pages",
+      "http://www.facebook.com/profile",
       "https://www.facebook.com/profile",
+      "http://www.facebook.com/tr",
       "https://www.facebook.com/tr",
       "http://www.facebook.com/2008",
+      "http://www.facebook.com/share.php",
       "https://www.facebook.com/share.php",
     ].find((item) => item === facebook)
   ) {
