@@ -15,7 +15,7 @@ async function saveToS3(events) {
   const client = new S3Client({ region: "us-east-1" });
 
   const params = {
-    Bucket: "cmc.data",
+    Bucket: process.env.S3_BUCKET_NAME,
     Key: "public/events.json",
     Body: JSON.stringify(events),
     ContentType: "application/json",
@@ -32,7 +32,7 @@ async function createInvalidation(invalidPath) {
   const client = new CloudFrontClient({ region: "us-east-1" });
 
   const params = {
-    DistributionId: "E3MCEYJZ5K3N1E",
+    DistributionId: process.env.CLOUDFRONT_DISTRIBUTION_ID,
     InvalidationBatch: {
       CallerReference: String(new Date().getTime()),
       Paths: {
@@ -83,7 +83,6 @@ async function resetEvents() {
     events,
   });
   await createInvalidation("/public/events.json");
-  await createInvalidation("/data/*");
   await triggerDeploy();
 
   logger.info(`events`, {
